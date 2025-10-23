@@ -4,13 +4,17 @@ import api from './api';
 export const authService = {
     // User authentication
     login: async (email, password) => {
-        const response = await api.post('/users/login', { email, password });
+        const response = await api.post('/users/login', { identifier: email, password });
         return response.data;
     },
 
     // Admin authentication
-    adminLogin: async (email, password) => {
-        const response = await api.post('/admin-auth/login', { email, password });
+    adminLogin: async (name, password) => {
+        const response = await api.post('/admin-auth/login', {
+            identifier: name,
+            name: name,
+            password
+        });
         return response.data;
     },
 

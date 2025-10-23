@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
+import LoginStudent from './pages/LoginStudent';
+import LoginParent from './pages/LoginParent';
+import LoginTeacher from './pages/LoginTeacher';
+import LoginAdmin from './pages/LoginAdmin';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Sessions from './pages/Sessions';
@@ -16,6 +20,10 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/login-student" element={<LoginStudent />} />
+            <Route path="/login-parent" element={<LoginParent />} />
+            <Route path="/login-teacher" element={<LoginTeacher />} />
+            <Route path="/login-admin" element={<LoginAdmin />} />
             <Route path="/register" element={<Register />} />
 
             {/* Protected routes */}

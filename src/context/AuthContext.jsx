@@ -87,13 +87,13 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Login function
-    const login = async (email, password, isAdmin = false) => {
+    const login = async (identifier, password, isAdmin = false) => {
         dispatch({ type: 'LOGIN_START' });
 
         try {
             const response = isAdmin
-                ? await authService.adminLogin(email, password)
-                : await authService.login(email, password);
+                ? await authService.adminLogin(identifier, password)
+                : await authService.login(identifier, password);
 
             const { access_token, user } = response;
 
