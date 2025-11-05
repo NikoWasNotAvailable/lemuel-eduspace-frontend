@@ -38,7 +38,7 @@ const Dashboard = () => {
 
     return (
         <Layout>
-            <div className="px-8 py-10 bg-[#F5F6FA] min-h-screen">
+            <div className="px-0 py-0">
                 {/* Header */}
                 <h1 className="text-2xl font-semibold text-gray-800 mb-8">
                     Hi, {user?.role === "admin" ? "Admin" : user?.first_name || "User"}
@@ -86,8 +86,8 @@ const Dashboard = () => {
                                         </span>
                                         <span
                                             className={`text-xs font-medium ${a.status === "Due soon"
-                                                    ? "text-red-500"
-                                                    : "text-orange-500"
+                                                ? "text-red-500"
+                                                : "text-orange-500"
                                                 }`}
                                         >
                                             {a.status}

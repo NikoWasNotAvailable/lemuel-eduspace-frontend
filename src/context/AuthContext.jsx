@@ -48,6 +48,11 @@ const authReducer = (state, action) => {
                 ...state,
                 error: null,
             };
+        case 'INIT_COMPLETE':
+            return {
+                ...state,
+                loading: false,
+            };
         default:
             return state;
     }
@@ -58,7 +63,7 @@ const initialState = {
     isAuthenticated: false,
     user: null,
     token: null,
-    loading: false,
+    loading: true, // Start with loading true to prevent immediate redirects
     error: null,
 };
 
@@ -82,7 +87,11 @@ export const AuthProvider = ({ children }) => {
                 // Invalid stored data, clear it
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                dispatch({ type: 'INIT_COMPLETE' });
             }
+        } else {
+            // No stored token found, stop loading
+            dispatch({ type: 'INIT_COMPLETE' });
         }
     }, []);
 
@@ -111,12 +120,29 @@ export const AuthProvider = ({ children }) => {
                     throw new Error('Invalid user type');
             }
 
-            const { access_token, user } = response;
+            const { access_token } = response;
+
+            let user;
+            if (userType === 'admin') {
+                // Admin response structure
+                user = {
+                    id: response.admin_user_id,
+                    name: response.admin_name,
+                    role: 'admin',
+                    first_name: response.admin_name,
+                    last_name: '',
+                    login_time: response.login_time,
+                    session_id: response.session_id
+                };
+            } else {
+                // Other roles response structure
+                user = response.user;
+            }
 
             // Store token and user data
             localStorage.setItem('token', access_token);
             localStorage.setItem('user', JSON.stringify(user));
-
+            
             dispatch({
                 type: 'LOGIN_SUCCESS',
                 payload: { user, token: access_token },
