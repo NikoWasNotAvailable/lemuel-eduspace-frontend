@@ -5,6 +5,7 @@ import LoginLeftPanel from '../components/UI/LoginLeftPanel';
 
 const LoginAdmin = () => {
     const [formData, setFormData] = useState({
+        email: '',
         name: '',
         password: '',
     });
@@ -27,7 +28,7 @@ const LoginAdmin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await login(formData.name, formData.password, true);
+        const result = await login(formData.email, formData.password, 'admin', { name: formData.name });
 
         if (result.success) {
             navigate(from, { replace: true });
@@ -43,7 +44,7 @@ const LoginAdmin = () => {
                 {/* Right Side */}
                 <div className="w-1/2 flex flex-col justify-center px-10 py-8 bg-white">
                     <h2 className="text-xl font-semibold text-gray-800 mb-1">Login Administrator</h2>
-                    <p className="text-sm text-gray-500 mb-6">Administrator Name</p>
+                    <p className="text-sm text-gray-500 mb-6">Email and Administrator Name</p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
@@ -51,6 +52,17 @@ const LoginAdmin = () => {
                                 {error}
                             </div>
                         )}
+
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="Enter your email address"
+                            required
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
+                        />
 
                         <input
                             id="name"

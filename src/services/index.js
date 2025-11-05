@@ -2,19 +2,37 @@ import api from './api';
 
 // Authentication services
 export const authService = {
-    // User authentication
-    login: async (email, password) => {
-        const response = await api.post('/users/login', { identifier: email, password });
+    // Student authentication
+    studentLogin: async (identifier, password) => {
+        const response = await api.post('/users/login/student', { identifier, password });
+        return response.data;
+    },
+
+    // Parent authentication
+    parentLogin: async (identifier, password) => {
+        const response = await api.post('/users/login/parent', { identifier, password });
+        return response.data;
+    },
+
+    // Teacher authentication
+    teacherLogin: async (identifier, password) => {
+        const response = await api.post('/users/login/teacher', { identifier, password });
         return response.data;
     },
 
     // Admin authentication
-    adminLogin: async (name, password) => {
-        const response = await api.post('/admin-auth/login', {
-            identifier: name,
+    adminLogin: async (email, name, password) => {
+        const response = await api.post('/admin-auth/login/admin', {
+            email: email,
             name: name,
-            password
+            password: password
         });
+        return response.data;
+    },
+
+    // Legacy login method (for backward compatibility)
+    login: async (email, password) => {
+        const response = await api.post('/users/login', { identifier: email, password });
         return response.data;
     },
 

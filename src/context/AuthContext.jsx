@@ -86,14 +86,30 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // Login function
-    const login = async (identifier, password, isAdmin = false) => {
+    // Login function with userType parameter
+    const login = async (identifier, password, userType = 'student', additionalData = {}) => {
         dispatch({ type: 'LOGIN_START' });
 
         try {
-            const response = isAdmin
-                ? await authService.adminLogin(identifier, password)
-                : await authService.login(identifier, password);
+            let response;
+
+            switch (userType) {
+                case 'student':
+                    response = await authService.studentLogin(identifier, password);
+                    break;
+                case 'parent':
+                    response = await authService.parentLogin(identifier, password);
+                    break;
+                case 'teacher':
+                    response = await authService.teacherLogin(identifier, password);
+                    break;
+                case 'admin':
+                    // For admin, identifier is the email, and we need name from additionalData
+                    response = await authService.adminLogin(identifier, additionalData.name || identifier, password);
+                    break;
+                default:
+                    throw new Error('Invalid user type');
+            }
 
             const { access_token, user } = response;
 

@@ -27,7 +27,7 @@ const LoginParent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await login(formData.identifier, formData.password, false);
+        const result = await login(formData.identifier, formData.password, 'parent');
 
         if (result.success) {
             navigate(from, { replace: true });
