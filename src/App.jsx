@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import RoleBasedRedirect from './components/RoleBasedRedirect';
 import Login from './pages/Login';
 import LoginStudent from './pages/LoginStudent';
 import LoginParent from './pages/LoginParent';
@@ -10,6 +11,7 @@ import LoginAdmin from './pages/LoginAdmin';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Sessions from './pages/Sessions';
+import Students from './pages/Students';
 import './App.css'
 
 function App() {
@@ -30,7 +32,7 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRoles={['teacher', 'student', 'parent', 'student_parent']}>
                   <Dashboard />
                 </ProtectedRoute>
               }
@@ -45,11 +47,20 @@ function App() {
               }
             />
 
-            {/* Redirect root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/students"
+              element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <Students />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Redirect root to appropriate page based on role */}
+            <Route path="/" element={<RoleBasedRedirect />} />
 
             {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<RoleBasedRedirect />} />
           </Routes>
         </div>
       </Router>

@@ -19,11 +19,12 @@ const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout, hasAnyRole } = useAuth();
 
     const navigation = [
-        { name: 'Home', href: '/dashboard', icon: HomeIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
+        { name: 'Home', href: '/dashboard', icon: HomeIcon, roles: ['teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Students', href: '/students', icon: UserIcon, roles: ['admin'] },
         { name: 'Teachers', href: '/teachers', icon: UserGroupIcon, roles: ['admin'] },
         { name: 'Classes', href: '/classes', icon: AcademicCapIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Calendar', href: '/calendar', icon: CalendarIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
+        { name: 'Banner', href: '/banner', icon: HomeIcon, roles: ['admin'] },
         { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
     ];
@@ -58,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                         {/* User Profile Section */}
                         <div className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6]">
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                                 <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center">
                                     <span className="text-lg font-medium">
                                         {user?.name?.[0] || user?.first_name?.[0] || 'U'}
@@ -90,7 +91,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </div>
 
                         {/* Sign Out Button for Mobile */}
-                        <div className="flex-shrink-0 p-4">
+                        <div className="shrink-0 p-4">
                             <button
                                 onClick={handleLogout}
                                 className="group flex items-center w-full px-3 py-2 text-base font-medium rounded-md text-[#c7d2fe] hover:text-white transition-colors duration-200"
@@ -108,7 +109,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <div className="flex-1 flex flex-col min-h-0 bg-[#2D336B]">
                     {/* User Profile Section */}
                     <div className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6]">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                             <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center">
                                 <span className="text-lg font-medium">
                                     {user?.name?.[0] || user?.first_name?.[0] || 'U'}
@@ -139,7 +140,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Sign Out Button */}
-                    <div className="flex-shrink-0 p-4">
+                    <div className="shrink-0 p-4">
                         <button
                             onClick={handleLogout}
                             className="group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md text-[#c7d2fe] hover:text-white transition-colors duration-200"
@@ -160,7 +161,7 @@ const Layout = ({ children }) => {
     return (
         <div className="h-screen flex flex-col overflow-hidden bg-gray-100">
             {/* Top Bar - Full Width */}
-            <div className="flex-shrink-0 h-16 bg-[#A9B5DF] shadow-sm border-b border-gray-200 flex items-center justify-between px-4">
+            <div className="shrink-0 h-16 bg-[#A9B5DF] shadow-sm border-b border-gray-200 flex items-center justify-between px-4">
                 <div className="flex items-center">
                     <button
                         type="button"
