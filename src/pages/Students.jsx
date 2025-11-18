@@ -30,6 +30,10 @@ const Students = () => {
     const [selectedRegion, setSelectedRegion] = useState('');
     const [selectedEducationTier, setSelectedEducationTier] = useState('');
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const studentsPerPage = 10;
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -81,6 +85,29 @@ const Students = () => {
             selectedEducationTier === '' || getEducationTier(student.grade) === selectedEducationTier;
         return matchesSearch && matchesGender && matchesClass && matchesRegion && matchesEducationTier;
     });
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+    const startIndex = (currentPage - 1) * studentsPerPage;
+    const endIndex = startIndex + studentsPerPage;
+    const currentStudents = filteredStudents.slice(startIndex, endIndex);
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedGender, selectedClass, selectedRegion, selectedEducationTier]);
+
+    const goToPage = (page) => {
+        setCurrentPage(page);
+    };
+
+    const goToPreviousPage = () => {
+        setCurrentPage(prev => Math.max(prev - 1, 1));
+    };
+
+    const goToNextPage = () => {
+        setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    };
 
     const handleDeleteStudent = async id => {
         if (window.confirm('Are you sure you want to delete this student?')) {
@@ -225,7 +252,7 @@ const Students = () => {
                         {/* Student count */}
                         <div className="mb-4">
                             <p className="text-sm text-gray-500">
-                                Showing {Math.min(filteredStudents.length, 10)} - {Math.min(filteredStudents.length, 10)} of {filteredStudents.length} students
+                                Showing {startIndex + 1} - {Math.min(endIndex, filteredStudents.length)} of {filteredStudents.length} students
                             </p>
                         </div>
 
@@ -249,7 +276,7 @@ const Students = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
-                                        {filteredStudents.map(student => (
+                                        {currentStudents.map(student => (
                                             <tr
                                                 key={student.id}
                                                 onClick={() => setSelectedStudent(student)}
@@ -279,23 +306,60 @@ const Students = () => {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex justify-center items-center gap-2 mt-6">
-                            <button className="p-2 hover:bg-gray-100 rounded">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <button className="w-8 h-8 rounded-full bg-orange-500 text-white font-medium text-sm">1</button>
-                            <button className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600 font-medium text-sm">2</button>
-                            <button className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600 font-medium text-sm">3</button>
-                            <span className="px-2 text-gray-500">...</span>
-                            <button className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600 font-medium text-sm">7</button>
-                            <button className="p-2 hover:bg-gray-100 rounded">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </div>
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-2 mt-6">
+                                <button
+                                    onClick={goToPreviousPage}
+                                    disabled={currentPage === 1}
+                                    className={`p-2 rounded ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Page numbers */}
+                                {Array.from({ length: totalPages }, (_, index) => {
+                                    const page = index + 1;
+                                    const isCurrentPage = page === currentPage;
+
+                                    // Show first page, last page, current page, and pages around current page
+                                    const showPage = page === 1 || page === totalPages ||
+                                        (page >= currentPage - 1 && page <= currentPage + 1);
+
+                                    if (!showPage) {
+                                        // Show ellipsis
+                                        if (page === currentPage - 2 || page === currentPage + 2) {
+                                            return <span key={page} className="px-2 text-gray-500">...</span>;
+                                        }
+                                        return null;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => goToPage(page)}
+                                            className={`w-8 h-8 rounded-full font-medium text-sm ${isCurrentPage
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'hover:bg-gray-100 text-gray-600'
+                                                }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+
+                                <button
+                                    onClick={goToNextPage}
+                                    disabled={currentPage === totalPages}
+                                    className={`p-2 rounded ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-500'}`}
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
