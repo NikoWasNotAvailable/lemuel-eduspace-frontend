@@ -7,6 +7,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         name: '',
         email: '',
         password: '',
+        parent_password: '',
         role: 'student',
         grade: '',
         gender: '',
@@ -42,6 +43,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         if (!formData.name.trim()) newErrors.name = 'Name is required';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
         if (!formData.password.trim()) newErrors.password = 'Password is required';
+        if (!formData.parent_password.trim()) newErrors.parent_password = 'Parent password is required';
         if (!formData.grade) newErrors.grade = 'Grade is required';
         if (!formData.gender) newErrors.gender = 'Gender is required';
         if (!formData.region.trim()) newErrors.region = 'Region is required';
@@ -72,6 +74,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
             name: '',
             email: '',
             password: '',
+            parent_password: '',
             role: 'student',
             grade: '',
             gender: '',
@@ -166,6 +169,22 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 placeholder="Enter password"
                             />
                             {errors.password && <p className="text-red-500 text-xs mt-2">{errors.password}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Parent Password <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="parent_password"
+                                value={formData.parent_password}
+                                onChange={handleInputChange}
+                                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.parent_password ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                                    }`}
+                                placeholder="Enter parent password"
+                            />
+                            {errors.parent_password && <p className="text-red-500 text-xs mt-2">{errors.parent_password}</p>}
                         </div>
 
                         <div>
