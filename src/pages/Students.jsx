@@ -146,6 +146,7 @@ const Students = () => {
                             >
                                 <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
                             </button>
+                            <h1 className="text-2xl font-semibold text-gray-800 ml-4">Students</h1>
                         </div>
 
                         {/* Search + Filters Row */}
