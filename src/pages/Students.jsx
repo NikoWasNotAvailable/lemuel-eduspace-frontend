@@ -27,6 +27,8 @@ const Students = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGender, setSelectedGender] = useState('');
     const [selectedClass, setSelectedClass] = useState('');
+    const [selectedRegion, setSelectedRegion] = useState('');
+    const [selectedEducationTier, setSelectedEducationTier] = useState('');
 
     const navigate = useNavigate();
 
@@ -73,7 +75,11 @@ const Students = () => {
             selectedGender === '' || student.gender === selectedGender;
         const matchesClass =
             selectedClass === '' || student.grade === selectedClass;
-        return matchesSearch && matchesGender && matchesClass;
+        const matchesRegion =
+            selectedRegion === '' || student.region === selectedRegion;
+        const matchesEducationTier =
+            selectedEducationTier === '' || getEducationTier(student.grade) === selectedEducationTier;
+        return matchesSearch && matchesGender && matchesClass && matchesRegion && matchesEducationTier;
     });
 
     const handleDeleteStudent = async id => {
@@ -152,7 +158,7 @@ const Students = () => {
                                         placeholder="Search..."
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        className="w-full border text-black border-gray-300 rounded-md pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     />
                                 </div>
 
@@ -175,6 +181,28 @@ const Students = () => {
                                     {['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'].map(c => (
                                         <option key={c} value={c}>{c}</option>
                                     ))}
+                                </select>
+
+                                <select
+                                    value={selectedRegion}
+                                    onChange={e => setSelectedRegion(e.target.value)}
+                                    className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white min-w-[100px]"
+                                >
+                                    <option value="">Region</option>
+                                    {[...new Set(students.map(s => s.region).filter(Boolean))].sort().map(region => (
+                                        <option key={region} value={region}>{region}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={selectedEducationTier}
+                                    onChange={e => setSelectedEducationTier(e.target.value)}
+                                    className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white min-w-[150px]"
+                                >
+                                    <option value="">Education Tier</option>
+                                    <option value="Preschool">Preschool</option>
+                                    <option value="Elementary School">Elementary School</option>
+                                    <option value="Junior High School">Junior High School</option>
                                 </select>
                             </div>
 
@@ -210,10 +238,12 @@ const Students = () => {
                                 <table className="min-w-full text-sm">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">REF ID</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">NIS ID</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">FIRST NAME</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">LAST NAME</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">GENDER</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">CLASS</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">REGION</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">EDUCATION TIER</th>
                                         </tr>
                                     </thead>
@@ -231,6 +261,8 @@ const Students = () => {
                                                 <td className="px-6 py-4 text-gray-700">{student.name?.split(' ')[0] || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">{student.name?.split(' ').slice(1).join(' ') || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700 capitalize">{student.gender || ''}</td>
+                                                <td className="px-6 py-4 text-gray-700 font-medium">{student.grade || ''}</td>
+                                                <td className="px-6 py-4 text-gray-700">{student.region || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">{getEducationTier(student.grade)}</td>
                                             </tr>
                                         ))}
@@ -277,6 +309,10 @@ const Students = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
+                            <div>
+                                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Region</p>
+                                <p className="text-gray-900 font-bold text-base mt-1">{selectedStudent.region || ''}</p>
+                            </div>
                             <div>
                                 <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">NIS ID</p>
                                 <p className="text-gray-900 font-bold text-base mt-1">{selectedStudent.nis || ''}</p>

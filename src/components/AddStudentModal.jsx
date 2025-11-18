@@ -7,6 +7,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         name: '',
         email: '',
         password: '',
+        role: 'student',
         grade: '',
         gender: '',
         region: '',
@@ -43,9 +44,11 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         if (!formData.password.trim()) newErrors.password = 'Password is required';
         if (!formData.grade) newErrors.grade = 'Grade is required';
         if (!formData.gender) newErrors.gender = 'Gender is required';
+        if (!formData.region.trim()) newErrors.region = 'Region is required';
         if (!formData.dob) newErrors.dob = 'Date of birth is required';
         if (!formData.birth_place.trim()) newErrors.birth_place = 'Birth place is required';
         if (!formData.religion) newErrors.religion = 'Religion is required';
+        if (!formData.address.trim()) newErrors.address = 'Address is required';
 
         // Email validation
         if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -69,6 +72,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
             name: '',
             email: '',
             password: '',
+            role: 'student',
             grade: '',
             gender: '',
             region: '',
@@ -153,7 +157,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 Password <span className="text-red-500">*</span>
                             </label>
                             <input
-                                type="password"
+                                type="text"
                                 name="password"
                                 value={formData.password}
                                 onChange={handleInputChange}
@@ -162,6 +166,19 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 placeholder="Enter password"
                             />
                             {errors.password && <p className="text-red-500 text-xs mt-2">{errors.password}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Role <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="role"
+                                value={formData.role}
+                                readOnly
+                                className="w-full border border-gray-300 bg-gray-100 rounded-lg px-4 py-3 text-sm text-gray-900 cursor-not-allowed"
+                            />
                         </div>
 
                         <div>
@@ -211,16 +228,18 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Region
+                                Region <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="region"
                                 value={formData.region}
                                 onChange={handleInputChange}
-                                className="w-full border border-gray-300 bg-white rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
-                                placeholder="Enter region (optional)"
+                                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.region ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                                    }`}
+                                placeholder="Enter region"
                             />
+                            {errors.region && <p className="text-red-500 text-xs mt-2">{errors.region}</p>}
                         </div>
 
                         <div>
@@ -294,16 +313,18 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Address
+                                Address <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full border border-gray-300 bg-white rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
-                                placeholder="Enter address (optional)"
+                                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.address ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                                    }`}
+                                placeholder="Enter address"
                             />
+                            {errors.address && <p className="text-red-500 text-xs mt-2">{errors.address}</p>}
                         </div>
                     </div>
 
