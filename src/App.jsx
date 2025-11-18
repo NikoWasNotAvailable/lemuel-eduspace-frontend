@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Sessions from './pages/Sessions';
 import Students from './pages/Students';
+import Teachers from './pages/Teachers';
 import './App.css'
 
 function App() {
@@ -52,6 +53,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['admin']}>
                   <Students />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/teachers"
+              element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <Teachers />
                 </ProtectedRoute>
               }
             />

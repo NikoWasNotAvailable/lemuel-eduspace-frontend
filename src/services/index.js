@@ -1,5 +1,6 @@
 import api from './api';
 import { studentService } from './studentService';
+import { teacherService } from './teacherService';
 
 // Authentication services
 export const authService = {
@@ -79,6 +80,9 @@ export const userService = {
     // Get students with filters (admin only) - delegated to studentService
     getStudents: studentService.getStudents,
 
+    // Get teachers with filters (admin only) - delegated to teacherService
+    getTeachers: teacherService.getTeachers,
+
     // Get user by ID (admin only)
     getUserById: async (userId) => {
         const response = await api.get(`/users/${userId}`);
@@ -118,8 +122,8 @@ export const userService = {
     }
 };
 
-// Export studentService for direct use
-export { studentService };
+// Export studentService and teacherService for direct use
+export { studentService, teacherService };
 
 // Class management services
 export const classService = {
