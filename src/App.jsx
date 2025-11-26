@@ -13,6 +13,7 @@ import Dashboard from './pages/Dashboard';
 import Sessions from './pages/Sessions';
 import Students from './pages/Students';
 import Teachers from './pages/Teachers';
+import Classes from './pages/Classes';
 import './App.css'
 
 function App() {
@@ -62,6 +63,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['admin']}>
                   <Teachers />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/classes"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <Classes />
                 </ProtectedRoute>
               }
             />
