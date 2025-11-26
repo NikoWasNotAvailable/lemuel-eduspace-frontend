@@ -34,7 +34,7 @@ export const subjectService = {
     // Search subjects by name with optional class filter
     searchSubjects: async (searchTerm, params = {}) => {
         const { class_id } = params;
-        
+
         const queryParams = new URLSearchParams({
             q: searchTerm
         });

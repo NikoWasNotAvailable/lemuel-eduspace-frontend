@@ -14,6 +14,10 @@ import Sessions from './pages/Sessions';
 import Students from './pages/Students';
 import Teachers from './pages/Teachers';
 import Classes from './pages/Classes';
+import RegionsList from './pages/RegionsList';
+import RegionGrades from './pages/RegionGrades';
+import GradeClasses from './pages/GradeClasses';
+import ClassSubjects from './pages/ClassSubjects';
 import './App.css'
 
 function App() {
@@ -67,11 +71,49 @@ function App() {
               }
             />
 
-            <Route
+            {/* Legacy route - redirect to new structure */}
+            {/* <Route
               path="/classes"
               element={
                 <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
                   <Classes />
+                </ProtectedRoute>
+              }
+            /> */}
+
+            {/* New structured navigation routes */}
+            <Route
+              path="/classes"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <RegionsList />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/classes/:regionId"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <RegionGrades />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/classes/:regionId/grade/:category"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <GradeClasses />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/classes/:regionId/class/:classId"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <ClassSubjects />
                 </ProtectedRoute>
               }
             />
