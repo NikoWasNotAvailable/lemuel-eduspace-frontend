@@ -10,6 +10,8 @@ export const studentService = {
         if (filters.limit !== undefined) params.append('limit', filters.limit);
         if (filters.grade) params.append('grade', filters.grade);
         if (filters.gender) params.append('gender', filters.gender);
+        if (filters.region_id) params.append('region_id', filters.region_id);
+        if (filters.search) params.append('search', filters.search);
 
         const response = await api.get(`/users/?${params.toString()}`);
         return response.data;

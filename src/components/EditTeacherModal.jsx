@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { regionService } from '../services';
 
 const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
     const [formData, setFormData] = useState({
@@ -7,7 +8,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
         email: '',
         password: '',
         gender: '',
-        region: '',
+        region_id: '',
         dob: '',
         birth_place: '',
         address: '',
@@ -16,6 +17,26 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
     });
 
     const [errors, setErrors] = useState({});
+    const [regions, setRegions] = useState([]);
+    const [loadingRegions, setLoadingRegions] = useState(false);
+
+    // Load regions when modal opens
+    useEffect(() => {
+        const loadRegions = async () => {
+            if (isOpen) {
+                setLoadingRegions(true);
+                try {
+                    const regionsData = await regionService.getAllRegions();
+                    setRegions(regionsData);
+                } catch (error) {
+                    console.error('Failed to load regions:', error);
+                } finally {
+                    setLoadingRegions(false);
+                }
+            }
+        };
+        loadRegions();
+    }, [isOpen]);
 
     useEffect(() => {
         if (teacher) {
@@ -24,7 +45,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
                 email: teacher.email || '',
                 password: teacher.password || '',
                 gender: teacher.gender || '',
-                region: teacher.region || '',
+                region_id: teacher.region_id || '',
                 dob: teacher.dob || '',
                 birth_place: teacher.birth_place || '',
                 address: teacher.address || '',
@@ -56,7 +77,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
         if (!formData.email.trim()) newErrors.email = 'Email is required';
         if (!formData.password.trim()) newErrors.password = 'Password is required';
         if (!formData.gender) newErrors.gender = 'Gender is required';
-        if (!formData.region.trim()) newErrors.region = 'Region is required';
+        if (!formData.region_id) newErrors.region_id = 'Region is required';
         if (!formData.dob) newErrors.dob = 'Date of birth is required';
         if (!formData.birth_place.trim()) newErrors.birth_place = 'Birth place is required';
         if (!formData.address.trim()) newErrors.address = 'Address is required';
@@ -204,16 +225,24 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Region <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                name="region"
-                                value={formData.region}
+                            <select
+                                name="region_id"
+                                value={formData.region_id}
                                 onChange={handleInputChange}
-                                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.region ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
-                                    }`}
-                                placeholder="Enter region"
-                            />
-                            {errors.region && <p className="text-red-500 text-xs mt-2">{errors.region}</p>}
+                                disabled={loadingRegions}
+                                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.region_id ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'}
+                                    ${loadingRegions ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            >
+                                <option value="" className="text-gray-500">
+                                    {loadingRegions ? 'Loading regions...' : 'Select region'}
+                                </option>
+                                {regions.map((region) => (
+                                    <option key={region.id} value={region.id} className="text-gray-900">
+                                        {region.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.region_id && <p className="text-red-500 text-xs mt-2">{errors.region_id}</p>}
                         </div>
 
                         {/* Address */}
