@@ -106,5 +106,53 @@ export const sessionService = {
     deleteSession: async (sessionId) => {
         const response = await api.delete(`/sessions/${sessionId}`);
         return response.data;
+    },
+
+    // Bulk create sessions for a subject (useful for creating multiple sessions at once)
+    bulkCreateSessions: async (subjectId, sessionsData) => {
+        const response = await api.post(`/sessions/bulk`, {
+            subject_id: subjectId,
+            sessions: sessionsData
+        });
+        return response.data;
+    },
+
+    // Get sessions by date range
+    getSessionsByDateRange: async (dateFrom, dateTo, params = {}) => {
+        const { skip = 0, limit = 100, subject_id } = params;
+
+        const queryParams = new URLSearchParams({
+            skip: skip.toString(),
+            limit: limit.toString(),
+            date_from: dateFrom,
+            date_to: dateTo
+        });
+
+        if (subject_id !== undefined && subject_id !== null) {
+            queryParams.append('subject_id', subject_id.toString());
+        }
+
+        const response = await api.get(`/sessions/by-date-range?${queryParams}`);
+        return response.data;
+    },
+
+    // Get sessions for today
+    getTodaySessions: async (params = {}) => {
+        const { subject_id } = params;
+
+        const queryParams = new URLSearchParams();
+
+        if (subject_id !== undefined && subject_id !== null) {
+            queryParams.append('subject_id', subject_id.toString());
+        }
+
+        const response = await api.get(`/sessions/today?${queryParams}`);
+        return response.data;
+    },
+
+    // Duplicate session (create a new session based on existing one)
+    duplicateSession: async (sessionId, newSessionData = {}) => {
+        const response = await api.post(`/sessions/${sessionId}/duplicate`, newSessionData);
+        return response.data;
     }
 };

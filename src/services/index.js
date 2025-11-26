@@ -6,6 +6,7 @@ import { teacherService } from './teacherService';
 import { classService } from './classService';
 import { subjectService } from './subjectService';
 import { sessionService } from './sessionService';
+import { sessionAttachmentService } from './sessionAttachmentService';
 import { notificationService } from './notificationService';
 import { enrollmentService } from './enrollmentService';
 import { teacherSubjectService } from './teacherSubjectService';
@@ -20,6 +21,7 @@ export {
     classService,
     subjectService,
     sessionService,
+    sessionAttachmentService,
     notificationService,
     enrollmentService,
     teacherSubjectService,

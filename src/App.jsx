@@ -18,6 +18,7 @@ import RegionsList from './pages/RegionsList';
 import RegionGrades from './pages/RegionGrades';
 import GradeClasses from './pages/GradeClasses';
 import ClassSubjects from './pages/ClassSubjects';
+import SubjectSessions from './pages/SubjectSessions';
 import './App.css'
 
 function App() {
@@ -114,6 +115,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
                   <ClassSubjects />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/subjects/:subjectId/sessions"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <SubjectSessions />
                 </ProtectedRoute>
               }
             />
