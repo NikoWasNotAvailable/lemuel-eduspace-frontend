@@ -7,16 +7,55 @@ export const sessionService = {
         return response.data;
     },
 
-    // Get all sessions with filters
-    getAllSessions: async (filters = {}) => {
-        const params = new URLSearchParams(filters);
-        const response = await api.get(`/sessions/?${params}`);
+    // Get all sessions with filters and pagination
+    getAllSessions: async (params = {}) => {
+        const {
+            skip = 0,
+            limit = 100,
+            subject_id,
+            class_id,
+            date_from,
+            date_to,
+            ...otherParams
+        } = params;
+
+        const queryParams = new URLSearchParams({
+            skip: skip.toString(),
+            limit: limit.toString(),
+            ...otherParams
+        });
+
+        // Only add optional parameters if they have values
+        if (subject_id !== undefined && subject_id !== null) {
+            queryParams.append('subject_id', subject_id.toString());
+        }
+        if (class_id !== undefined && class_id !== null) {
+            queryParams.append('class_id', class_id.toString());
+        }
+        if (date_from) {
+            queryParams.append('date_from', date_from);
+        }
+        if (date_to) {
+            queryParams.append('date_to', date_to);
+        }
+
+        const response = await api.get(`/sessions/?${queryParams}`);
         return response.data;
     },
 
-    // Get upcoming sessions
-    getUpcomingSessions: async () => {
-        const response = await api.get('/sessions/upcoming');
+    // Get upcoming sessions with optional filters
+    getUpcomingSessions: async (params = {}) => {
+        const { limit = 10, subject_id } = params;
+
+        const queryParams = new URLSearchParams({
+            limit: limit.toString()
+        });
+
+        if (subject_id !== undefined && subject_id !== null) {
+            queryParams.append('subject_id', subject_id.toString());
+        }
+
+        const response = await api.get(`/sessions/upcoming?${queryParams}`);
         return response.data;
     },
 
@@ -26,15 +65,34 @@ export const sessionService = {
         return response.data;
     },
 
-    // Get sessions by subject
-    getSessionsBySubject: async (subjectId) => {
-        const response = await api.get(`/sessions/subject/${subjectId}`);
+    // Get sessions by subject with pagination
+    getSessionsBySubject: async (subjectId, params = {}) => {
+        const { skip = 0, limit = 100 } = params;
+
+        const queryParams = new URLSearchParams({
+            skip: skip.toString(),
+            limit: limit.toString()
+        });
+
+        const response = await api.get(`/sessions/subject/${subjectId}?${queryParams}`);
+        return response.data;
+    },
+
+    // Get next session number for a subject
+    getNextSessionNumber: async (subjectId) => {
+        const response = await api.get(`/sessions/subject/${subjectId}/next-number`);
         return response.data;
     },
 
     // Get session by ID
     getSessionById: async (sessionId) => {
         const response = await api.get(`/sessions/${sessionId}`);
+        return response.data;
+    },
+
+    // Get session attachments separately
+    getSessionAttachments: async (sessionId) => {
+        const response = await api.get(`/sessions/${sessionId}/attachments`);
         return response.data;
     },
 
