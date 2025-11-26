@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     HomeIcon,
@@ -17,6 +17,7 @@ import {
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout, hasAnyRole } = useAuth();
+    const location = useLocation();
 
     const navigation = [
         { name: 'Home', href: '/dashboard', icon: HomeIcon, roles: ['teacher', 'student', 'parent', 'student_parent'] },
@@ -76,17 +77,24 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                         <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                             <nav className="mt-2 px-2 space-y-1">
-                                {filteredNavigation.map((item) => (
-                                    <Link
-                                        key={item.name}
-                                        to={item.href}
-                                        className="group flex items-center px-3 py-2 text-base font-medium rounded-md text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white transition-colors duration-200"
-                                        onClick={onClose}
-                                    >
-                                        <item.icon className="mr-4 h-6 w-6" />
-                                        {item.name}
-                                    </Link>
-                                ))}
+                                {filteredNavigation.map((item) => {
+                                    const isActive = location.pathname === item.href;
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            to={item.href}
+                                            className={`group flex items-center px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${isActive
+                                                    ? 'bg-[#5b21b6] text-white border-r-4 border-white'
+                                                    : 'text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white'
+                                                }`}
+                                            onClick={onClose}
+                                        >
+                                            <item.icon className={`mr-4 h-6 w-6 ${isActive ? 'text-white' : ''
+                                                }`} />
+                                            {item.name}
+                                        </Link>
+                                    );
+                                })}
                             </nav>
                         </div>
 
@@ -126,16 +134,23 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                     <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                         <nav className="mt-2 flex-1 px-2 space-y-1">
-                            {filteredNavigation.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    to={item.href}
-                                    className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white transition-colors duration-200"
-                                >
-                                    <item.icon className="mr-3 h-5 w-5" />
-                                    {item.name}
-                                </Link>
-                            ))}
+                            {filteredNavigation.map((item) => {
+                                const isActive = location.pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        to={item.href}
+                                        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${isActive
+                                                ? 'bg-[#5b21b6] text-white border-r-4 border-white'
+                                                : 'text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white'
+                                            }`}
+                                    >
+                                        <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : ''
+                                            }`} />
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
                         </nav>
                     </div>
 
