@@ -122,7 +122,7 @@ const GradeClasses = () => {
                         </div>
 
                         {/* Region Info Card */}
-                        {regionInfo && (
+                        {/* {regionInfo && (
                             <div className="bg-[#EAF2FF] rounded-lg p-6 mb-8">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -135,7 +135,7 @@ const GradeClasses = () => {
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Error display */}
                         {error && (
