@@ -26,7 +26,7 @@ const Students = () => {
     // Filters and search
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGender, setSelectedGender] = useState('');
-    const [selectedClass, setSelectedClass] = useState('');
+    const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('');
     const [selectedEducationTier, setSelectedEducationTier] = useState('');
 
@@ -77,13 +77,13 @@ const Students = () => {
             student.nis?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesGender =
             selectedGender === '' || student.gender === selectedGender;
-        const matchesClass =
-            selectedClass === '' || student.grade === selectedClass;
+        const matchesGrade =
+            selectedGrade === '' || student.grade === selectedGrade;
         const matchesRegion =
             selectedRegion === '' || student.region === selectedRegion;
         const matchesEducationTier =
             selectedEducationTier === '' || getEducationTier(student.grade) === selectedEducationTier;
-        return matchesSearch && matchesGender && matchesClass && matchesRegion && matchesEducationTier;
+        return matchesSearch && matchesGender && matchesGrade && matchesRegion && matchesEducationTier;
     });
 
     // Pagination calculations
@@ -95,7 +95,7 @@ const Students = () => {
     // Reset to first page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, selectedGender, selectedClass, selectedRegion, selectedEducationTier]);
+    }, [searchTerm, selectedGender, selectedGrade, selectedRegion, selectedEducationTier]);
 
     const goToPage = (page) => {
         setCurrentPage(page);
@@ -201,11 +201,11 @@ const Students = () => {
                                 </select>
 
                                 <select
-                                    value={selectedClass}
-                                    onChange={e => setSelectedClass(e.target.value)}
+                                    value={selectedGrade}
+                                    onChange={e => setSelectedGrade(e.target.value)}
                                     className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white min-w-[100px]"
                                 >
-                                    <option value="">Class</option>
+                                    <option value="">Grade</option>
                                     {['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'].map(c => (
                                         <option key={c} value={c}>{c}</option>
                                     ))}
