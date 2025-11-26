@@ -1,29 +1,38 @@
 import api from './api';
 
 export const classService = {
-    // Create class
+    // Create class (admin only)
     createClass: async (classData) => {
         const response = await api.post('/classes/', classData);
         return response.data;
     },
 
-    // Get all classes with optional region filter
-    getAllClasses: async (filters = {}) => {
+    // Get all classes with pagination
+    getAllClasses: async (skip = 0, limit = 100) => {
         const params = new URLSearchParams();
+        params.append('skip', skip);
+        params.append('limit', limit);
 
-        if (filters.region_id) params.append('region_id', filters.region_id);
-        if (filters.skip !== undefined) params.append('skip', filters.skip);
-        if (filters.limit !== undefined) params.append('limit', filters.limit);
+        const response = await api.get(`/classes/?${params.toString()}`);
+        return response.data;
+    },
 
-        const queryString = params.toString();
-        const url = queryString ? `/classes/?${queryString}` : '/classes/';
-        const response = await api.get(url);
+    // Search classes by name
+    searchClasses: async (searchTerm) => {
+        const params = new URLSearchParams();
+        params.append('q', searchTerm);
+
+        const response = await api.get(`/classes/search?${params.toString()}`);
         return response.data;
     },
 
     // Get classes by region
-    getClassesByRegion: async (regionId) => {
-        const response = await api.get(`/classes/?region_id=${regionId}`);
+    getClassesByRegion: async (regionId, skip = 0, limit = 100) => {
+        const params = new URLSearchParams();
+        params.append('skip', skip);
+        params.append('limit', limit);
+
+        const response = await api.get(`/classes/by-region/${regionId}?${params.toString()}`);
         return response.data;
     },
 
@@ -33,13 +42,13 @@ export const classService = {
         return response.data;
     },
 
-    // Update class
+    // Update class (teacher or admin only)
     updateClass: async (classId, classData) => {
         const response = await api.put(`/classes/${classId}`, classData);
         return response.data;
     },
 
-    // Delete class
+    // Delete class (admin only)
     deleteClass: async (classId) => {
         const response = await api.delete(`/classes/${classId}`);
         return response.data;
