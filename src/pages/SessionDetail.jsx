@@ -172,7 +172,7 @@ const SessionDetail = () => {
 
                 {/* Sub-header / Subject Info */}
                 <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4 text-left">
                         {subjectInfo?.name || 'Subject Name'}
                     </h2>
 

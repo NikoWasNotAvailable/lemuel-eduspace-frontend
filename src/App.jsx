@@ -10,7 +10,6 @@ import LoginTeacher from './pages/LoginTeacher';
 import LoginAdmin from './pages/LoginAdmin';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import Sessions from './pages/Sessions';
 import Students from './pages/Students';
 import Teachers from './pages/Teachers';
 import Classes from './pages/Classes';
@@ -42,15 +41,6 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['teacher', 'student', 'parent', 'student_parent']}>
                   <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/sessions"
-              element={
-                <ProtectedRoute>
-                  <Sessions />
                 </ProtectedRoute>
               }
             />

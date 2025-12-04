@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { subjectService, classService } from '../services';
+import { subjectService, classService, teacherSubjectService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddSubjectModal from '../components/AddSubjectModal';
+import AssignTeacherModal from '../components/AssignTeacherModal';
 import {
     BookOpenIcon,
     ArrowLeftIcon,
     PlusIcon,
-    AcademicCapIcon
+    AcademicCapIcon,
+    UserPlusIcon,
+    UserIcon
 } from '@heroicons/react/24/outline';
 
 const ClassSubjects = () => {
@@ -16,12 +19,18 @@ const ClassSubjects = () => {
 
     const [classInfo, setClassInfo] = useState(null);
     const [subjects, setSubjects] = useState([]);
+    const [subjectTeachers, setSubjectTeachers] = useState({}); // Map of subjectId -> teachers[]
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     // Modal states
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [addingSubject, setAddingSubject] = useState(false);
+
+    // Assign teacher modal states
+    const [isAssignTeacherModalOpen, setIsAssignTeacherModalOpen] = useState(false);
+    const [selectedSubjectForAssignment, setSelectedSubjectForAssignment] = useState(null);
+    const [assigningTeacher, setAssigningTeacher] = useState(false);
 
     // Load class info and subjects on component mount
     useEffect(() => {
@@ -43,11 +52,34 @@ const ClassSubjects = () => {
 
             setClassInfo(classData);
             setSubjects(subjectsData);
+
+            // Load teachers for each subject
+            await loadTeachersForSubjects(subjectsData);
         } catch (error) {
             console.error('Failed to load class data:', error);
             setError('Failed to load class information. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadTeachersForSubjects = async (subjectsList) => {
+        try {
+            const teachersMap = {};
+            await Promise.all(
+                subjectsList.map(async (subject) => {
+                    try {
+                        const response = await teacherSubjectService.getSubjectTeachers(subject.id);
+                        teachersMap[subject.id] = response.teachers || [];
+                    } catch (err) {
+                        console.error(`Failed to load teachers for subject ${subject.id}:`, err);
+                        teachersMap[subject.id] = [];
+                    }
+                })
+            );
+            setSubjectTeachers(teachersMap);
+        } catch (error) {
+            console.error('Failed to load teachers for subjects:', error);
         }
     };
 
@@ -66,6 +98,7 @@ const ClassSubjects = () => {
             // Refresh subjects list
             const updatedSubjects = await subjectService.getSubjectsByClass(classId);
             setSubjects(updatedSubjects);
+            await loadTeachersForSubjects(updatedSubjects);
 
             setIsAddModalOpen(false);
             setError(null);
@@ -74,6 +107,47 @@ const ClassSubjects = () => {
             setError(error.response?.data?.detail || 'Failed to add subject. Please try again.');
         } finally {
             setAddingSubject(false);
+        }
+    };
+
+    const handleOpenAssignTeacher = (e, subject) => {
+        e.stopPropagation(); // Prevent navigation to subject sessions
+        setSelectedSubjectForAssignment(subject);
+        setIsAssignTeacherModalOpen(true);
+    };
+
+    const handleAssignTeachers = async ({ subjectId, teachersToAdd, teachersToRemove }) => {
+        try {
+            setAssigningTeacher(true);
+            setError(null);
+
+            // Remove teachers that were unselected
+            for (const teacherId of teachersToRemove) {
+                await teacherSubjectService.unassignTeacherFromSubject(teacherId, subjectId);
+            }
+
+            // Add newly selected teachers
+            for (const teacherId of teachersToAdd) {
+                await teacherSubjectService.assignTeacherToSubject({
+                    teacher_id: teacherId,
+                    subject_id: subjectId
+                });
+            }
+
+            // Refresh teachers for this subject
+            const response = await teacherSubjectService.getSubjectTeachers(subjectId);
+            setSubjectTeachers(prev => ({
+                ...prev,
+                [subjectId]: response.teachers || []
+            }));
+
+            setIsAssignTeacherModalOpen(false);
+            setSelectedSubjectForAssignment(null);
+        } catch (error) {
+            console.error('Failed to assign teachers:', error);
+            setError(error.response?.data?.detail || 'Failed to assign teachers. Please try again.');
+        } finally {
+            setAssigningTeacher(false);
         }
     };
 
@@ -186,23 +260,45 @@ const ClassSubjects = () => {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {subjects.map((subject) => (
-                                        <div
-                                            key={subject.id}
-                                            onClick={() => handleSubjectClick(subject)}
-                                            className="bg-[#EAF2FF] h-32 rounded-xl flex flex-col items-center justify-center
-                                       text-lg font-semibold text-gray-800 cursor-pointer 
-                                       hover:bg-[#d8e9ff] transition shadow-sm p-4"
-                                        >
-                                            <BookOpenIcon className="h-8 w-8 text-blue-600 mb-2" />
-                                            <span className="text-center">{subject.name}</span>
-                                            {subject.class_name && (
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {subject.class_name}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {subjects.map((subject) => {
+                                        const teachers = subjectTeachers[subject.id] || [];
+
+                                        return (
+                                            <div
+                                                key={subject.id}
+                                                onClick={() => handleSubjectClick(subject)}
+                                                className="bg-[#EAF2FF] min-h-32 rounded-xl flex flex-col items-center justify-center
+                                                    text-lg font-semibold text-gray-800 cursor-pointer 
+                                                    hover:bg-[#d8e9ff] transition shadow-sm p-4 relative"
+                                            >
+                                                {/* Assign Teacher Button */}
+                                                <button
+                                                    onClick={(e) => handleOpenAssignTeacher(e, subject)}
+                                                    className="absolute top-2 right-2 p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                    title="Assign Teachers"
+                                                >
+                                                    <UserPlusIcon className="h-4 w-4 text-blue-600" />
+                                                </button>
+
+                                                <BookOpenIcon className="h-8 w-8 text-blue-600 mb-2" />
+                                                <span className="text-center">{subject.name}</span>
+
+                                                {/* Teachers Display */}
+                                                {teachers.length > 0 ? (
+                                                    <div className="mt-2 flex items-center text-sm text-gray-600">
+                                                        <UserIcon className="h-4 w-4 mr-1" />
+                                                        <span className="truncate max-w-[150px]">
+                                                            {teachers.map(t => t.name).join(', ')}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="mt-2 text-xs text-gray-400 italic">
+                                                        No teacher assigned
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )
                         )}
@@ -218,6 +314,20 @@ const ClassSubjects = () => {
                 loading={addingSubject}
                 classId={classId}
                 className={classInfo?.name}
+            />
+
+            {/* Assign Teacher Modal */}
+            <AssignTeacherModal
+                isOpen={isAssignTeacherModalOpen}
+                onClose={() => {
+                    setIsAssignTeacherModalOpen(false);
+                    setSelectedSubjectForAssignment(null);
+                }}
+                onSubmit={handleAssignTeachers}
+                loading={assigningTeacher}
+                subjectId={selectedSubjectForAssignment?.id}
+                subjectName={selectedSubjectForAssignment?.name}
+                currentTeachers={selectedSubjectForAssignment ? (subjectTeachers[selectedSubjectForAssignment.id] || []) : []}
             />
         </Layout>
     );
