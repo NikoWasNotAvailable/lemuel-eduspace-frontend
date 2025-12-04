@@ -84,8 +84,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                                             key={item.name}
                                             to={item.href}
                                             className={`group flex items-center px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${isActive
-                                                    ? 'bg-[#5b21b6] text-white border-r-4 border-white'
-                                                    : 'text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white'
+                                                ? 'bg-[#5b21b6] text-white border-r-4 border-white'
+                                                : 'text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white'
                                                 }`}
                                             onClick={onClose}
                                         >
@@ -113,7 +113,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             )}
 
             {/* Desktop sidebar */}
-            <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:top-16">
+            <div className="hidden md:flex md:w-64 md:flex-col bg-[#2D336B]">
                 <div className="flex-1 flex flex-col min-h-0 bg-[#2D336B]">
                     {/* User Profile Section */}
                     <div className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6]">
@@ -141,8 +141,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                                         key={item.name}
                                         to={item.href}
                                         className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${isActive
-                                                ? 'bg-[#5b21b6] text-white border-r-4 border-white'
-                                                : 'text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white'
+                                            ? 'bg-[#5b21b6] text-white border-r-4 border-white'
+                                            : 'text-[#c7d2fe] hover:bg-[#5b21b6] hover:text-white'
                                             }`}
                                     >
                                         <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : ''
@@ -194,7 +194,7 @@ const Layout = ({ children }) => {
                 <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
                 {/* Main content */}
-                <main className="flex-1 relative overflow-y-auto focus:outline-none md:ml-64">
+                <main className="flex-1 relative overflow-y-auto focus:outline-none">
                     <div className="py-6">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                             {children}

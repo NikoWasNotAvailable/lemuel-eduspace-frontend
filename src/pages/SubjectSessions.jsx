@@ -79,9 +79,7 @@ const SubjectSessions = () => {
     };
 
     const handleSessionClick = (session) => {
-        // Navigate to session detail page (to be implemented)
-        // navigate(`/sessions/${session.id}`);
-        console.log('Session clicked:', session);
+        navigate(`/subjects/${subjectId}/sessions/${session.id}`);
     };
 
     const handleBackToSubjects = () => {
@@ -91,7 +89,7 @@ const SubjectSessions = () => {
             // Fallback if we have class_id but no region info loaded yet (though we should have it)
             // We might not know the region ID here easily without classInfo.
             // But we loaded classInfo, so it should be fine.
-             navigate(-1); // Simple fallback
+            navigate(-1); // Simple fallback
         } else {
             navigate('/classes');
         }
@@ -202,7 +200,7 @@ const SubjectSessions = () => {
                                             <div className="absolute top-3 right-3 bg-white rounded-full p-1">
                                                 <ClockIcon className="h-4 w-4 text-blue-600" />
                                             </div>
-                                            
+
                                             <span className="text-3xl font-bold text-blue-600 mb-1">
                                                 {session.session_no}
                                             </span>

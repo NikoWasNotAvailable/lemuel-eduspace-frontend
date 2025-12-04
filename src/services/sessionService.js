@@ -109,6 +109,8 @@ export const sessionService = {
     },
 
     // Bulk create sessions for a subject (useful for creating multiple sessions at once)
+    // Note: This endpoint is not present in the provided backend router, but keeping it commented out for reference or future implementation
+    /*
     bulkCreateSessions: async (subjectId, sessionsData) => {
         const response = await api.post(`/sessions/bulk`, {
             subject_id: subjectId,
@@ -116,6 +118,7 @@ export const sessionService = {
         });
         return response.data;
     },
+    */
 
     // Get sessions by date range
     getSessionsByDateRange: async (dateFrom, dateTo, params = {}) => {
@@ -132,27 +135,36 @@ export const sessionService = {
             queryParams.append('subject_id', subject_id.toString());
         }
 
-        const response = await api.get(`/sessions/by-date-range?${queryParams}`);
+        // Updated to use the main sessions endpoint which supports date filtering
+        const response = await api.get(`/sessions/?${queryParams}`);
         return response.data;
     },
 
     // Get sessions for today
     getTodaySessions: async (params = {}) => {
         const { subject_id } = params;
+        const today = new Date().toISOString().split('T')[0];
 
-        const queryParams = new URLSearchParams();
+        const queryParams = new URLSearchParams({
+            date_from: today,
+            date_to: today
+        });
 
         if (subject_id !== undefined && subject_id !== null) {
             queryParams.append('subject_id', subject_id.toString());
         }
 
-        const response = await api.get(`/sessions/today?${queryParams}`);
+        // Updated to use the main sessions endpoint
+        const response = await api.get(`/sessions/?${queryParams}`);
         return response.data;
     },
 
     // Duplicate session (create a new session based on existing one)
+    // Note: This endpoint is not present in the provided backend router
+    /*
     duplicateSession: async (sessionId, newSessionData = {}) => {
         const response = await api.post(`/sessions/${sessionId}/duplicate`, newSessionData);
         return response.data;
     }
+    */
 };

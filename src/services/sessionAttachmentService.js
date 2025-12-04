@@ -3,7 +3,12 @@ import api from './api';
 export const sessionAttachmentService = {
     // Upload attachment to a session
     uploadAttachment: async (sessionId, formData) => {
-        const response = await api.post(`/sessions/${sessionId}/attachments/upload`, formData, {
+        // Ensure session_id is in formData
+        if (formData instanceof FormData && !formData.has('session_id')) {
+            formData.append('session_id', sessionId);
+        }
+
+        const response = await api.post('/session-attachments/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -13,7 +18,7 @@ export const sessionAttachmentService = {
 
     // Get all attachments for a session
     getSessionAttachments: async (sessionId) => {
-        const response = await api.get(`/sessions/${sessionId}/attachments`);
+        const response = await api.get(`/session-attachments/session/${sessionId}`);
         return response.data;
     },
 
@@ -52,7 +57,22 @@ export const sessionAttachmentService = {
             limit: limit.toString()
         });
 
-        const response = await api.get(`/session-attachments/by-uploader/${uploaderId}?${queryParams}`);
+        const response = await api.get(`/session-attachments/user/${uploaderId}?${queryParams}`);
+        return response.data;
+    },
+
+    // Bulk upload attachments
+    bulkUploadAttachments: async (sessionId, formData) => {
+        // Ensure session_id is in formData
+        if (formData instanceof FormData && !formData.has('session_id')) {
+            formData.append('session_id', sessionId);
+        }
+
+        const response = await api.post('/session-attachments/bulk-upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     },
 

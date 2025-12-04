@@ -5,6 +5,7 @@ import { sessionService } from '../services';
 const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjectName }) => {
     const [formData, setFormData] = useState({
         session_no: '',
+        name: '',
         date: '',
         subject_id: subjectId
     });
@@ -15,7 +16,7 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
             fetchNextSessionNumber();
             // Set default date to today
             const today = new Date().toISOString().split('T')[0];
-            setFormData(prev => ({ ...prev, date: today, subject_id: subjectId }));
+            setFormData(prev => ({ ...prev, date: today, subject_id: subjectId, name: '' }));
         }
     }, [isOpen, subjectId]);
 
@@ -92,6 +93,22 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
                                     </div>
                                 )}
                             </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                Session Name
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                id="name"
+                                required
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="e.g. Introduction to Algebra"
+                            />
                         </div>
 
                         <div>

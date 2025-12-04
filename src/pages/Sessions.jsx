@@ -158,8 +158,8 @@ const Sessions = () => {
                                                         </p>
                                                     </div>
                                                     <div className={`px-2 py-1 text-xs font-medium rounded-full ${isUpcoming
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-gray-100 text-gray-800'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
                                                         }`}>
                                                         {isUpcoming ? 'Upcoming' : 'Past'}
                                                     </div>
