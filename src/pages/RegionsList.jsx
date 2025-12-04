@@ -43,12 +43,12 @@ const RegionsList = () => {
                     <div className="p-8">
                         {/* Header with back button */}
                         <div className="mb-6 flex justify-start">
-                            <button
+                            {/* <button
                                 onClick={() => navigate(-1)}
                                 className="p-2 hover:bg-gray-100 rounded-lg"
                             >
                                 <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
-                            </button>
+                            </button> */}
                             <h1 className="text-2xl font-semibold text-gray-800 ml-4">
                                 Regions
                             </h1>

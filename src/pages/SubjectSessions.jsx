@@ -120,16 +120,6 @@ const SubjectSessions = () => {
 
                         {/* Navigation and action buttons */}
                         <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={handleBackToSubjects}
-                                    className="flex items-center text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
-                                >
-                                    <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                                    Back to Subjects
-                                </button>
-                            </div>
-
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
                                 className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
@@ -139,7 +129,7 @@ const SubjectSessions = () => {
                         </div>
 
                         {/* Subject Info Card */}
-                        {subjectInfo && (
+                        {/* {subjectInfo && (
                             <div className="bg-[#EAF2FF] rounded-lg p-6 mb-8">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -154,7 +144,7 @@ const SubjectSessions = () => {
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Error display */}
                         {error && (
