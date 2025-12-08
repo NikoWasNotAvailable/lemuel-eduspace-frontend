@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { subjectService, sessionService, classService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddSessionModal from '../components/AddSessionModal';
+import EditSessionModal from '../components/EditSessionModal';
 import {
     CalendarDaysIcon,
     ArrowLeftIcon,
     PlusIcon,
-    ClockIcon
+    ClockIcon,
+    PencilIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 
 const SubjectSessions = () => {
@@ -23,6 +26,9 @@ const SubjectSessions = () => {
     // Modal states
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [addingSession, setAddingSession] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingSession, setEditingSession] = useState(null);
+    const [updatingSession, setUpdatingSession] = useState(false);
 
     // Load subject info and sessions on component mount
     useEffect(() => {
@@ -80,6 +86,54 @@ const SubjectSessions = () => {
 
     const handleSessionClick = (session) => {
         navigate(`/subjects/${subjectId}/sessions/${session.id}`);
+    };
+
+    const handleEditSession = (e, session) => {
+        e.stopPropagation();
+        setEditingSession(session);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateSession = async (formData) => {
+        try {
+            setUpdatingSession(true);
+            await sessionService.updateSession(editingSession.id, formData);
+
+            // Refresh sessions
+            const updatedSessionsData = await sessionService.getSessionsBySubject(subjectId);
+            const updatedSessionsList = Array.isArray(updatedSessionsData) ? updatedSessionsData : (updatedSessionsData?.sessions || updatedSessionsData?.items || []);
+            setSessions(updatedSessionsList);
+
+            setIsEditModalOpen(false);
+            setEditingSession(null);
+            setError(null);
+        } catch (error) {
+            console.error('Failed to update session:', error);
+            setError(error.response?.data?.detail || 'Failed to update session. Please try again.');
+        } finally {
+            setUpdatingSession(false);
+        }
+    };
+
+    const handleDeleteSession = async (e, sessionId) => {
+        e.stopPropagation();
+        if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await sessionService.deleteSession(sessionId);
+
+            // Refresh sessions
+            const updatedSessionsData = await sessionService.getSessionsBySubject(subjectId);
+            const updatedSessionsList = Array.isArray(updatedSessionsData) ? updatedSessionsData : (updatedSessionsData?.sessions || updatedSessionsData?.items || []);
+            setSessions(updatedSessionsList);
+
+            setError(null);
+        } catch (error) {
+            console.error('Failed to delete session:', error);
+            setError(error.response?.data?.detail || 'Failed to delete session. Please try again.');
+        }
     };
 
     const handleBackToSubjects = () => {
@@ -185,10 +239,28 @@ const SubjectSessions = () => {
                                             onClick={() => handleSessionClick(session)}
                                             className="bg-[#EAF2FF] h-32 rounded-xl flex flex-col items-center justify-center
                                        text-gray-800 cursor-pointer 
-                                       hover:bg-[#d8e9ff] transition shadow-sm p-4 relative"
+                                       hover:bg-[#d8e9ff] transition shadow-sm p-4 relative group"
                                         >
                                             <div className="absolute top-3 right-3 bg-white rounded-full p-1">
                                                 <ClockIcon className="h-4 w-4 text-blue-600" />
+                                            </div>
+
+                                            {/* Edit/Delete Buttons */}
+                                            <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={(e) => handleEditSession(e, session)}
+                                                    className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition"
+                                                    title="Edit session"
+                                                >
+                                                    <PencilIcon className="h-4 w-4 text-blue-600" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleDeleteSession(e, session.id)}
+                                                    className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition"
+                                                    title="Delete session"
+                                                >
+                                                    <TrashIcon className="h-4 w-4 text-red-600" />
+                                                </button>
                                             </div>
 
                                             <span className="text-3xl font-bold text-blue-600 mb-1">
@@ -217,6 +289,18 @@ const SubjectSessions = () => {
                 loading={addingSession}
                 subjectId={subjectId}
                 subjectName={subjectInfo?.name}
+            />
+
+            {/* Edit Session Modal */}
+            <EditSessionModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingSession(null);
+                }}
+                onSubmit={handleUpdateSession}
+                loading={updatingSession}
+                sessionData={editingSession}
             />
         </Layout>
     );

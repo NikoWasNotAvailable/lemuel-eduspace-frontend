@@ -4,13 +4,16 @@ import { subjectService, classService, teacherSubjectService } from '../services
 import Layout from '../components/Layout/Layout';
 import AddSubjectModal from '../components/AddSubjectModal';
 import AssignTeacherModal from '../components/AssignTeacherModal';
+import EditSubjectModal from '../components/EditSubjectModal';
 import {
     BookOpenIcon,
     ArrowLeftIcon,
     PlusIcon,
     AcademicCapIcon,
     UserPlusIcon,
-    UserIcon
+    UserIcon,
+    PencilIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 
 const ClassSubjects = () => {
@@ -31,6 +34,11 @@ const ClassSubjects = () => {
     const [isAssignTeacherModalOpen, setIsAssignTeacherModalOpen] = useState(false);
     const [selectedSubjectForAssignment, setSelectedSubjectForAssignment] = useState(null);
     const [assigningTeacher, setAssigningTeacher] = useState(false);
+
+    // Edit modal states
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingSubject, setEditingSubject] = useState(null);
+    const [updatingSubject, setUpdatingSubject] = useState(false);
 
     // Load class info and subjects on component mount
     useEffect(() => {
@@ -156,6 +164,54 @@ const ClassSubjects = () => {
         navigate(`/subjects/${subject.id}/sessions`);
     };
 
+    const handleEditSubject = (e, subject) => {
+        e.stopPropagation();
+        setEditingSubject(subject);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateSubject = async (formData) => {
+        try {
+            setUpdatingSubject(true);
+            await subjectService.updateSubject(editingSubject.id, formData);
+
+            // Refresh subjects
+            const updatedSubjects = await subjectService.getSubjectsByClass(classId);
+            setSubjects(updatedSubjects);
+            await loadTeachersForSubjects(updatedSubjects);
+
+            setIsEditModalOpen(false);
+            setEditingSubject(null);
+            setError(null);
+        } catch (error) {
+            console.error('Failed to update subject:', error);
+            setError(error.response?.data?.detail || 'Failed to update subject. Please try again.');
+        } finally {
+            setUpdatingSubject(false);
+        }
+    };
+
+    const handleDeleteSubject = async (e, subjectId) => {
+        e.stopPropagation();
+        if (!window.confirm('Are you sure you want to delete this subject? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await subjectService.deleteSubject(subjectId);
+
+            // Refresh subjects
+            const updatedSubjects = await subjectService.getSubjectsByClass(classId);
+            setSubjects(updatedSubjects);
+            await loadTeachersForSubjects(updatedSubjects);
+
+            setError(null);
+        } catch (error) {
+            console.error('Failed to delete subject:', error);
+            setError(error.response?.data?.detail || 'Failed to delete subject. Please try again.');
+        }
+    };
+
     const handleBackToClasses = () => {
         // Use regionId from URL params, fallback to classInfo.region.id
         const targetRegionId = regionId || classInfo?.region?.id;
@@ -269,16 +325,36 @@ const ClassSubjects = () => {
                                                 onClick={() => handleSubjectClick(subject)}
                                                 className="bg-[#EAF2FF] min-h-32 rounded-xl flex flex-col items-center justify-center
                                                     text-lg font-semibold text-gray-800 cursor-pointer 
-                                                    hover:bg-[#d8e9ff] transition shadow-sm p-4 relative"
+                                                    hover:bg-[#d8e9ff] transition shadow-sm p-4 relative group"
                                             >
-                                                {/* Assign Teacher Button */}
-                                                <button
-                                                    onClick={(e) => handleOpenAssignTeacher(e, subject)}
-                                                    className="absolute top-2 right-2 p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
-                                                    title="Assign Teachers"
-                                                >
-                                                    <UserPlusIcon className="h-4 w-4 text-blue-600" />
-                                                </button>
+                                                {/* Action Buttons */}
+                                                <div className="absolute top-2 right-2 flex gap-1">
+                                                    {/* Assign Teacher Button */}
+                                                    <button
+                                                        onClick={(e) => handleOpenAssignTeacher(e, subject)}
+                                                        className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                        title="Assign Teachers"
+                                                    >
+                                                        <UserPlusIcon className="h-4 w-4 text-blue-600" />
+                                                    </button>
+                                                    {/* Edit/Delete Buttons - shown on hover */}
+                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            onClick={(e) => handleEditSubject(e, subject)}
+                                                            className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                            title="Edit subject"
+                                                        >
+                                                            <PencilIcon className="h-4 w-4 text-blue-600" />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => handleDeleteSubject(e, subject.id)}
+                                                            className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                            title="Delete subject"
+                                                        >
+                                                            <TrashIcon className="h-4 w-4 text-red-600" />
+                                                        </button>
+                                                    </div>
+                                                </div>
 
                                                 <BookOpenIcon className="h-8 w-8 text-blue-600 mb-2" />
                                                 <span className="text-center">{subject.name}</span>
@@ -328,6 +404,18 @@ const ClassSubjects = () => {
                 subjectId={selectedSubjectForAssignment?.id}
                 subjectName={selectedSubjectForAssignment?.name}
                 currentTeachers={selectedSubjectForAssignment ? (subjectTeachers[selectedSubjectForAssignment.id] || []) : []}
+            />
+
+            {/* Edit Subject Modal */}
+            <EditSubjectModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingSubject(null);
+                }}
+                onSubmit={handleUpdateSubject}
+                loading={updatingSubject}
+                subjectData={editingSubject}
             />
         </Layout>
     );

@@ -3,10 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { regionService, classService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddClassModal from '../components/AddClassModal';
+import EditClassModal from '../components/EditClassModal';
 import {
     AcademicCapIcon,
     ArrowLeftIcon,
-    PlusIcon
+    PlusIcon,
+    PencilIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 
 const GradeClasses = () => {
@@ -23,6 +26,9 @@ const GradeClasses = () => {
     // Modal states
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [addingClass, setAddingClass] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingClass, setEditingClass] = useState(null);
+    const [updatingClass, setUpdatingClass] = useState(false);
 
     // Load region info and classes on component mount
     useEffect(() => {
@@ -68,6 +74,52 @@ const GradeClasses = () => {
             setError(error.response?.data?.detail || 'Failed to add class. Please try again.');
         } finally {
             setAddingClass(false);
+        }
+    };
+
+    const handleEditClass = (cls, e) => {
+        e.stopPropagation();
+        setEditingClass(cls);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateClass = async (formData) => {
+        try {
+            setUpdatingClass(true);
+            await classService.updateClass(editingClass.id, formData);
+
+            // Refresh classes
+            const updatedClasses = await classService.getClassesByRegion(regionId);
+            setClasses(updatedClasses);
+
+            setIsEditModalOpen(false);
+            setEditingClass(null);
+            setError(null);
+        } catch (error) {
+            console.error('Failed to update class:', error);
+            setError(error.response?.data?.detail || 'Failed to update class. Please try again.');
+        } finally {
+            setUpdatingClass(false);
+        }
+    };
+
+    const handleDeleteClass = async (classId, e) => {
+        e.stopPropagation();
+        if (!window.confirm('Are you sure you want to delete this class? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await classService.deleteClass(classId);
+
+            // Refresh classes
+            const updatedClasses = await classService.getClassesByRegion(regionId);
+            setClasses(updatedClasses);
+
+            setError(null);
+        } catch (error) {
+            console.error('Failed to delete class:', error);
+            setError(error.response?.data?.detail || 'Failed to delete class. Please try again.');
         }
     };
 
@@ -170,12 +222,32 @@ const GradeClasses = () => {
                                                         {gradeClasses.map(cls => (
                                                             <div
                                                                 key={cls.id}
-                                                                onClick={() => navigate(`/classes/${regionId}/class/${cls.id}`)}
-                                                                className="bg-[#EAF2FF] h-20 flex items-center justify-center rounded-xl 
-                                                                   text-lg font-semibold text-gray-800 cursor-pointer 
+                                                                className="bg-[#EAF2FF] h-20 rounded-xl relative group
                                                                    hover:bg-[#d8e9ff] transition"
                                                             >
-                                                                {cls.name}
+                                                                <div
+                                                                    onClick={() => navigate(`/classes/${regionId}/class/${cls.id}`)}
+                                                                    className="flex items-center justify-center h-full cursor-pointer
+                                                                       text-lg font-semibold text-gray-800"
+                                                                >
+                                                                    {cls.name}
+                                                                </div>
+                                                                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button
+                                                                        onClick={(e) => handleEditClass(cls, e)}
+                                                                        className="bg-white p-1.5 rounded-md shadow-md hover:bg-gray-100 transition"
+                                                                        title="Edit class"
+                                                                    >
+                                                                        <PencilIcon className="h-4 w-4 text-blue-600" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => handleDeleteClass(cls.id, e)}
+                                                                        className="bg-white p-1.5 rounded-md shadow-md hover:bg-gray-100 transition"
+                                                                        title="Delete class"
+                                                                    >
+                                                                        <TrashIcon className="h-4 w-4 text-red-600" />
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -216,6 +288,18 @@ const GradeClasses = () => {
                 loading={addingClass}
                 selectedRegionId={regionId}
                 selectedCategory={category}
+            />
+
+            {/* Edit Class Modal */}
+            <EditClassModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingClass(null);
+                }}
+                onSubmit={handleUpdateClass}
+                loading={updatingClass}
+                classData={editingClass}
             />
         </Layout>
     );
