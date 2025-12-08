@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { regionService } from '../services';
+import { regionService, classService } from '../services';
 
 const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         grade: '',
         gender: '',
         region_id: '',
+        class_id: '',
         dob: '',
         birth_place: '',
         religion: '',
@@ -23,6 +24,8 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [errors, setErrors] = useState({});
     const [regions, setRegions] = useState([]);
     const [loadingRegions, setLoadingRegions] = useState(false);
+    const [classes, setClasses] = useState([]);
+    const [loadingClasses, setLoadingClasses] = useState(false);
 
     // Load regions when modal opens
     useEffect(() => {
@@ -41,6 +44,28 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         };
         loadRegions();
     }, [isOpen]);
+
+    // Load classes when region is selected
+    useEffect(() => {
+        const loadClasses = async () => {
+            if (formData.region_id) {
+                setLoadingClasses(true);
+                try {
+                    const classesData = await classService.getClassesByRegion(formData.region_id);
+                    setClasses(classesData);
+                } catch (error) {
+                    console.error('Failed to load classes:', error);
+                    setClasses([]);
+                } finally {
+                    setLoadingClasses(false);
+                }
+            } else {
+                setClasses([]);
+                setFormData(prev => ({ ...prev, class_id: '' }));
+            }
+        };
+        loadClasses();
+    }, [formData.region_id]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -68,6 +93,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         if (!formData.grade) newErrors.grade = 'Grade is required';
         if (!formData.gender) newErrors.gender = 'Gender is required';
         if (!formData.region_id) newErrors.region_id = 'Region is required';
+        if (!formData.class_id) newErrors.class_id = 'Class is required';
         if (!formData.dob) newErrors.dob = 'Date of birth is required';
         if (!formData.birth_place.trim()) newErrors.birth_place = 'Birth place is required';
         if (!formData.religion) newErrors.religion = 'Religion is required';
@@ -100,6 +126,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
             grade: '',
             gender: '',
             region_id: '',
+            class_id: '',
             dob: '',
             birth_place: '',
             religion: '',
@@ -107,6 +134,7 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
             address: ''
         });
         setErrors({});
+        setClasses([]);
     };
 
     const handleClose = () => {
@@ -288,6 +316,30 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 ))}
                             </select>
                             {errors.region_id && <p className="text-red-500 text-xs mt-2">{errors.region_id}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Class <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                name="class_id"
+                                value={formData.class_id}
+                                onChange={handleInputChange}
+                                disabled={!formData.region_id || loadingClasses}
+                                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.class_id ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'}
+                                    ${(!formData.region_id || loadingClasses) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            >
+                                <option value="" className="text-gray-500">
+                                    {!formData.region_id ? 'Select region first' : loadingClasses ? 'Loading classes...' : 'Select class'}
+                                </option>
+                                {classes.map((classItem) => (
+                                    <option key={classItem.id} value={classItem.id} className="text-gray-900">
+                                        {classItem.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.class_id && <p className="text-red-500 text-xs mt-2">{errors.class_id}</p>}
                         </div>
 
                         <div>

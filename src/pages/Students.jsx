@@ -270,7 +270,7 @@ const Students = () => {
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">FIRST NAME</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">LAST NAME</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">GENDER</th>
-                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">CLASS</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">GRADE</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">REGION</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">EDUCATION TIER</th>
                                         </tr>
@@ -340,8 +340,8 @@ const Students = () => {
                                             key={page}
                                             onClick={() => goToPage(page)}
                                             className={`w-8 h-8 rounded-full font-medium text-sm ${isCurrentPage
-                                                    ? 'bg-orange-500 text-white'
-                                                    : 'hover:bg-gray-100 text-gray-600'
+                                                ? 'bg-orange-500 text-white'
+                                                : 'hover:bg-gray-100 text-gray-600'
                                                 }`}
                                         >
                                             {page}
@@ -423,8 +423,15 @@ const Students = () => {
                             </div>
 
                             <div>
-                                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">CLASS</p>
+                                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">GRADE</p>
                                 <p className="text-gray-900 font-bold text-base mt-1">{selectedStudent.grade || ''}</p>
+                            </div>
+
+                            <div>
+                                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">CLASS</p>
+                                <p className="text-gray-900 font-bold text-base mt-1">
+                                    {selectedStudent.class_obj?.name || selectedStudent.class_name || 'Not Assigned'}
+                                </p>
                             </div>
 
                             <div>
