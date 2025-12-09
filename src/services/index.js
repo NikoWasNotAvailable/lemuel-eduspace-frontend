@@ -11,6 +11,7 @@ import { notificationService } from './notificationService';
 import { enrollmentService } from './enrollmentService';
 import { teacherSubjectService } from './teacherSubjectService';
 import { regionService } from './regionService';
+import { bannerService } from './bannerService';
 
 // Re-export all services for convenient access
 export {
@@ -25,5 +26,6 @@ export {
     notificationService,
     enrollmentService,
     teacherSubjectService,
-    regionService
+    regionService,
+    bannerService
 };

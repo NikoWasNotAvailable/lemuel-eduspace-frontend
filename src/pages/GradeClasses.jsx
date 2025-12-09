@@ -141,12 +141,12 @@ const GradeClasses = () => {
 
     const getCategoryGrades = () => {
         let grades = ALL_GRADES.filter(grade => grade.startsWith(category));
-        
+
         // Filter for student: only show their assigned grade
         if (user?.role === 'student' && user?.grade) {
             grades = grades.filter(g => g === user.grade);
         }
-        
+
         return grades;
     };
 

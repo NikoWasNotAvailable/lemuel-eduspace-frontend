@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
+import { bannerService } from "../services";
 import { ClockIcon } from "@heroicons/react/24/outline";
 
 const Dashboard = () => {
     const { user } = useAuth();
+    const [banners, setBanners] = useState([]);
     const [activities] = useState([
         {
             id: 1,
@@ -35,6 +37,27 @@ const Dashboard = () => {
             status: "Upcoming",
         },
     ]);
+
+    useEffect(() => {
+        const fetchBanners = async () => {
+            try {
+                const data = await bannerService.getMyBanners();
+                setBanners(data);
+            } catch (err) {
+                console.error("Error fetching banners:", err);
+            }
+        };
+
+        if (user) {
+            fetchBanners();
+        }
+    }, [user]);
+
+    const getImageUrl = (url) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `http://localhost:8000${url}`;
+    };
 
     return (
         <Layout>
@@ -100,41 +123,32 @@ const Dashboard = () => {
 
                     {/* RIGHT SECTION */}
                     <div className="space-y-6">
-                        {/* Info card */}
-                        <div className="bg-white rounded-2xl shadow-md overflow-hidden relative">
-                            <div className="px-6 py-3 border-b">
-                                <h2 className="text-lg font-semibold text-gray-800">
-                                    Information
-                                </h2>
+                        {/* Banners Section */}
+                        {banners.length > 0 ? (
+                            banners.map((banner) => (
+                                <div key={banner.id} className="bg-white rounded-2xl shadow-md overflow-hidden relative">
+                                    <div className="px-6 py-3 border-b">
+                                        <h2 className="text-lg font-semibold text-gray-800">
+                                            {banner.description || "Information"}
+                                        </h2>
+                                    </div>
+                                    <div className="relative">
+                                        <img
+                                            src={getImageUrl(banner.image_url)}
+                                            alt={banner.description || "Banner"}
+                                            className="w-full h-44 object-cover"
+                                            onError={(e) => {
+                                                e.target.src = 'https://via.placeholder.com/400x200?text=Image+Error';
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-md p-6 text-center text-gray-500">
+                                No banners available for your region.
                             </div>
-                            <div className="relative">
-                                <img
-                                    src="/images/backtoschool.jpg"
-                                    alt="Info banner"
-                                    className="w-full h-44 object-cover"
-                                />
-                                <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-lg hover:bg-gray-800 transition">
-                                    ✏️
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Events card */}
-                        <div className="bg-white rounded-2xl shadow-md overflow-hidden relative">
-                            <div className="px-6 py-3 border-b">
-                                <h2 className="text-lg font-semibold text-gray-800">Events</h2>
-                            </div>
-                            <div className="relative">
-                                <img
-                                    src="/images/17agustus.jpg"
-                                    alt="Event banner"
-                                    className="w-full h-44 object-cover"
-                                />
-                                <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-lg hover:bg-gray-800 transition">
-                                    ✏️
-                                </button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

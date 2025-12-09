@@ -327,8 +327,8 @@ const ClassSubjects = () => {
                                         <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                                         <h3 className="text-lg font-semibold text-gray-900 mb-2">No subjects found</h3>
                                         <p className="text-gray-600 mb-6">
-                                            {user?.role === 'teacher' 
-                                                ? 'You are not assigned to any subjects in this class.' 
+                                            {user?.role === 'teacher'
+                                                ? 'You are not assigned to any subjects in this class.'
                                                 : (classInfo ? `There are no subjects for ${classInfo.name} yet.` : 'There are no subjects for this class yet.')}
                                         </p>
                                         <button
