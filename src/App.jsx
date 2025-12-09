@@ -20,6 +20,7 @@ import ClassSubjects from './pages/ClassSubjects';
 import SubjectSessions from './pages/SubjectSessions';
 import SessionDetail from './pages/SessionDetail';
 import Notifications from './pages/Notifications';
+import Calendar from './pages/Calendar';
 import Banners from './pages/Banners';
 import './App.css'
 
@@ -70,6 +71,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'student_parent']}>
                   <Notifications />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                  <Calendar />
                 </ProtectedRoute>
               }
             />
