@@ -19,6 +19,7 @@ import GradeClasses from './pages/GradeClasses';
 import ClassSubjects from './pages/ClassSubjects';
 import SubjectSessions from './pages/SubjectSessions';
 import SessionDetail from './pages/SessionDetail';
+import Notifications from './pages/Notifications';
 import './App.css'
 
 function App() {
@@ -59,6 +60,15 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['admin']}>
                   <Teachers />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute requiredRoles={['admin', 'teacher']}>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />
