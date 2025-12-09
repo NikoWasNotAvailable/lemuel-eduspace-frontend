@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { regionService, classService, userService } from '../services';
+import { regionService, classService, userService, notificationService } from '../services';
 
 const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -10,6 +10,7 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
         nominal: '',
         date: '',
         is_scheduled: 0,
+        image: null,
         assignmentType: 'none', // none, all, region, class, specific
         regionId: '',
         classId: '',
@@ -23,6 +24,7 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [loadingRegions, setLoadingRegions] = useState(false);
     const [loadingClasses, setLoadingClasses] = useState(false);
     const [loadingUsers, setLoadingUsers] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const notificationTypes = [
         { value: 'general', label: 'General' },
@@ -88,6 +90,15 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
             console.error('Failed to load users:', error);
         } finally {
             setLoadingUsers(false);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFormData(prev => ({
+                ...prev,
+                image: e.target.files[0]
+            }));
         }
     };
 
@@ -162,16 +173,34 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
+            let imagePath = null;
+
+            // Upload image if selected
+            if (formData.image instanceof File) {
+                setIsUploading(true);
+                try {
+                    const uploadResponse = await notificationService.uploadImage(formData.image);
+                    imagePath = uploadResponse.image_path;
+                } catch (error) {
+                    console.error('Failed to upload image:', error);
+                    setErrors(prev => ({ ...prev, image: 'Failed to upload image' }));
+                    setIsUploading(false);
+                    return;
+                }
+                setIsUploading(false);
+            }
+
             // Prepare data for submission
             const submitData = {
                 notificationData: {
                     title: formData.title,
                     description: formData.description || null,
                     type: formData.type,
-                    is_scheduled: formData.is_scheduled
+                    is_scheduled: formData.is_scheduled,
+                    image: imagePath
                 },
                 assignmentType: formData.assignmentType,
                 regionId: formData.regionId || null,
@@ -258,6 +287,24 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 className="w-full border border-gray-300 bg-white rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
                                 placeholder="Enter notification description (optional)"
                             />
+                        </div>
+
+                        {/* Image */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Image (Optional)
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="w-full border border-gray-300 bg-white rounded-lg px-4 py-3 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
+                            />
+                            {formData.image && (
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Type */}
@@ -441,10 +488,10 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || isUploading}
                             className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-sm font-semibold transition-all"
                         >
-                            {loading ? 'Creating Notification...' : 'Create Notification'}
+                            {isUploading ? 'Uploading Image...' : (loading ? 'Creating Notification...' : 'Create Notification')}
                         </button>
                     </div>
                 </form>

@@ -144,8 +144,18 @@ const Notifications = () => {
         try {
             setAddingNotification(true);
 
+            // Create FormData
+            const formData = new FormData();
+            formData.append('title', submitData.notificationData.title);
+            if (submitData.notificationData.description) formData.append('description', submitData.notificationData.description);
+            formData.append('type', submitData.notificationData.type);
+            formData.append('is_scheduled', submitData.notificationData.is_scheduled);
+            if (submitData.notificationData.nominal) formData.append('nominal', submitData.notificationData.nominal);
+            if (submitData.notificationData.date) formData.append('date', submitData.notificationData.date);
+            if (submitData.notificationData.image) formData.append('image', submitData.notificationData.image);
+
             // Create the notification first
-            const notification = await notificationService.createNotification(submitData.notificationData);
+            const notification = await notificationService.createNotification(formData);
 
             // Assign to users based on assignment type
             if (submitData.assignmentType !== 'none') {
@@ -365,6 +375,15 @@ const Notifications = () => {
 
                                                     {/* Content */}
                                                     <div className="flex-1 min-w-0 pt-1">
+                                                        {notification.image && (
+                                                            <div className="mb-3">
+                                                                <img
+                                                                    src={`http://localhost:8000${notification.image}`}
+                                                                    alt="Notification"
+                                                                    className="max-h-48 rounded-lg object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
                                                         {notification.description && (
                                                             <p className="text-white/90 text-sm mb-3 font-medium text-left">
                                                                 {notification.description}
