@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { regionService, classService } from '../services';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import AddClassModal from '../components/AddClassModal';
 import {
@@ -12,6 +13,7 @@ import {
 const RegionGrades = () => {
     const { regionId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const ALL_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
 
@@ -109,12 +111,14 @@ const RegionGrades = () => {
 
                         {/* Navigation and action buttons */}
                         <div className="flex items-center justify-between mb-6">
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
-                            >
-                                ADD CLASS
-                            </button>
+                            {user?.role === 'admin' && (
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
+                                >
+                                    ADD CLASS
+                                </button>
+                            )}
                         </div>
 
                         {/* Region Info Card */}
@@ -154,6 +158,15 @@ const RegionGrades = () => {
                                     const gradeCategories = getGradesByCategory();
 
                                     return Object.entries(gradeCategories).map(([category, grades]) => {
+                                        // Filter grades for student
+                                        let displayGrades = grades;
+                                        if (user?.role === 'student' && user?.grade) {
+                                            displayGrades = grades.filter(g => g === user.grade);
+                                        }
+
+                                        // If no grades to display in this category, skip it
+                                        if (displayGrades.length === 0) return null;
+
                                         const categoryClasses = classes.filter(cls => {
                                             const name = cls.name.toUpperCase();
                                             return name.startsWith(category);
@@ -174,7 +187,7 @@ const RegionGrades = () => {
 
                                                 {/* Grades Grid - Show all grades */}
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                                                    {grades.map(grade => {
+                                                    {displayGrades.map(grade => {
                                                         const gradeClasses = getClassesForGrade(grade);
                                                         const hasClasses = gradeClasses.length > 0;
 

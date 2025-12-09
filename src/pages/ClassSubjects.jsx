@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { subjectService, classService, teacherSubjectService } from '../services';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import AddSubjectModal from '../components/AddSubjectModal';
 import AssignTeacherModal from '../components/AssignTeacherModal';
@@ -19,10 +20,12 @@ import {
 const ClassSubjects = () => {
     const { regionId, classId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [classInfo, setClassInfo] = useState(null);
     const [subjects, setSubjects] = useState([]);
     const [subjectTeachers, setSubjectTeachers] = useState({}); // Map of subjectId -> teachers[]
+    const [teacherAssignments, setTeacherAssignments] = useState([]); // For filtering teacher's subjects
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -60,6 +63,16 @@ const ClassSubjects = () => {
 
             setClassInfo(classData);
             setSubjects(subjectsData);
+
+            // If user is teacher, load their assignments
+            if (user?.role === 'teacher') {
+                try {
+                    const assignments = await teacherSubjectService.getTeacherSubjectAssignments({ teacher_id: user.id });
+                    setTeacherAssignments(assignments || []);
+                } catch (err) {
+                    console.error('Failed to load teacher assignments:', err);
+                }
+            }
 
             // Load teachers for each subject
             await loadTeachersForSubjects(subjectsData);
@@ -257,12 +270,14 @@ const ClassSubjects = () => {
 
                         {/* Navigation and action buttons */}
                         <div className="flex items-center justify-between mb-6">
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
-                            >
-                                ADD SUBJECT
-                            </button>
+                            {user?.role === 'admin' && (
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
+                                >
+                                    ADD SUBJECT
+                                </button>
+                            )}
                         </div>
 
                         {/* Class Info Card */}
@@ -299,84 +314,97 @@ const ClassSubjects = () => {
 
                         {/* Subjects Grid */}
                         {!loading && (
-                            subjects.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No subjects found</h3>
-                                    <p className="text-gray-600 mb-6">
-                                        {classInfo ? `There are no subjects for ${classInfo.name} yet.` : 'There are no subjects for this class yet.'}
-                                    </p>
-                                    <button
-                                        onClick={() => setIsAddModalOpen(true)}
-                                        className="bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto"
-                                    >
-                                        <PlusIcon className="h-5 w-5 mr-2" />
-                                        Create First Subject
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {subjects.map((subject) => {
-                                        const teachers = subjectTeachers[subject.id] || [];
+                            (() => {
+                                // Filter subjects for teacher
+                                let displaySubjects = subjects;
+                                if (user?.role === 'teacher' && teacherAssignments.length > 0) {
+                                    const assignedSubjectIds = teacherAssignments.map(a => a.subject_id);
+                                    displaySubjects = subjects.filter(s => assignedSubjectIds.includes(s.id));
+                                }
 
-                                        return (
-                                            <div
-                                                key={subject.id}
-                                                onClick={() => handleSubjectClick(subject)}
-                                                className="bg-[#EAF2FF] min-h-32 rounded-xl flex flex-col items-center justify-center
-                                                    text-lg font-semibold text-gray-800 cursor-pointer 
-                                                    hover:bg-[#d8e9ff] transition shadow-sm p-4 relative group"
-                                            >
-                                                {/* Action Buttons */}
-                                                <div className="absolute top-2 right-2 flex gap-1">
-                                                    {/* Assign Teacher Button */}
-                                                    <button
-                                                        onClick={(e) => handleOpenAssignTeacher(e, subject)}
-                                                        className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
-                                                        title="Assign Teachers"
-                                                    >
-                                                        <UserPlusIcon className="h-4 w-4 text-blue-600" />
-                                                    </button>
-                                                    {/* Edit/Delete Buttons - shown on hover */}
-                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button
-                                                            onClick={(e) => handleEditSubject(e, subject)}
-                                                            className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
-                                                            title="Edit subject"
-                                                        >
-                                                            <PencilIcon className="h-4 w-4 text-blue-600" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => handleDeleteSubject(e, subject.id)}
-                                                            className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
-                                                            title="Delete subject"
-                                                        >
-                                                            <TrashIcon className="h-4 w-4 text-red-600" />
-                                                        </button>
-                                                    </div>
+                                return displaySubjects.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <BookOpenIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No subjects found</h3>
+                                        <p className="text-gray-600 mb-6">
+                                            {user?.role === 'teacher' 
+                                                ? 'You are not assigned to any subjects in this class.' 
+                                                : (classInfo ? `There are no subjects for ${classInfo.name} yet.` : 'There are no subjects for this class yet.')}
+                                        </p>
+                                        <button
+                                            onClick={() => setIsAddModalOpen(true)}
+                                            className={`bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto ${user?.role !== 'admin' ? 'hidden' : ''}`}
+                                        >
+                                            <PlusIcon className="h-5 w-5 mr-2" />
+                                            Create First Subject
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {displaySubjects.map((subject) => {
+                                            const teachers = subjectTeachers[subject.id] || [];
+
+                                            return (
+                                                <div
+                                                    key={subject.id}
+                                                    onClick={() => handleSubjectClick(subject)}
+                                                    className="bg-[#EAF2FF] min-h-32 rounded-xl flex flex-col items-center justify-center
+                                                        text-lg font-semibold text-gray-800 cursor-pointer 
+                                                        hover:bg-[#d8e9ff] transition shadow-sm p-4 relative group"
+                                                >
+                                                    {/* Action Buttons */}
+                                                    {user?.role === 'admin' && (
+                                                        <div className="absolute top-2 right-2 flex gap-1">
+                                                            {/* Assign Teacher Button */}
+                                                            <button
+                                                                onClick={(e) => handleOpenAssignTeacher(e, subject)}
+                                                                className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                                title="Assign Teachers"
+                                                            >
+                                                                <UserPlusIcon className="h-4 w-4 text-blue-600" />
+                                                            </button>
+                                                            {/* Edit/Delete Buttons - shown on hover */}
+                                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button
+                                                                    onClick={(e) => handleEditSubject(e, subject)}
+                                                                    className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                                    title="Edit subject"
+                                                                >
+                                                                    <PencilIcon className="h-4 w-4 text-blue-600" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => handleDeleteSubject(e, subject.id)}
+                                                                    className="p-1.5 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                                                                    title="Delete subject"
+                                                                >
+                                                                    <TrashIcon className="h-4 w-4 text-red-600" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    <BookOpenIcon className="h-8 w-8 text-blue-600 mb-2" />
+                                                    <span className="text-center">{subject.name}</span>
+
+                                                    {/* Teachers Display */}
+                                                    {teachers.length > 0 ? (
+                                                        <div className="mt-2 flex items-center text-sm text-gray-600">
+                                                            <UserIcon className="h-4 w-4 mr-1" />
+                                                            <span className="truncate max-w-[150px]">
+                                                                {teachers.map(t => t.name).join(', ')}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="mt-2 text-xs text-gray-400 italic">
+                                                            No teacher assigned
+                                                        </div>
+                                                    )}
                                                 </div>
-
-                                                <BookOpenIcon className="h-8 w-8 text-blue-600 mb-2" />
-                                                <span className="text-center">{subject.name}</span>
-
-                                                {/* Teachers Display */}
-                                                {teachers.length > 0 ? (
-                                                    <div className="mt-2 flex items-center text-sm text-gray-600">
-                                                        <UserIcon className="h-4 w-4 mr-1" />
-                                                        <span className="truncate max-w-[150px]">
-                                                            {teachers.map(t => t.name).join(', ')}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="mt-2 text-xs text-gray-400 italic">
-                                                        No teacher assigned
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()
                         )}
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { subjectService, sessionService, classService } from '../services';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import AddSessionModal from '../components/AddSessionModal';
 import EditSessionModal from '../components/EditSessionModal';
@@ -16,6 +17,7 @@ import {
 const SubjectSessions = () => {
     const { subjectId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [subjectInfo, setSubjectInfo] = useState(null);
     const [classInfo, setClassInfo] = useState(null);
@@ -174,12 +176,14 @@ const SubjectSessions = () => {
 
                         {/* Navigation and action buttons */}
                         <div className="flex items-center justify-between mb-6">
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
-                            >
-                                ADD SESSION
-                            </button>
+                            {(user?.role === 'admin' || user?.role === 'teacher') && (
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
+                                >
+                                    ADD SESSION
+                                </button>
+                            )}
                         </div>
 
                         {/* Subject Info Card */}
@@ -225,7 +229,7 @@ const SubjectSessions = () => {
                                     </p>
                                     <button
                                         onClick={() => setIsAddModalOpen(true)}
-                                        className="bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto"
+                                        className={`bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto ${user?.role !== 'admin' && user?.role !== 'teacher' ? 'hidden' : ''}`}
                                     >
                                         <PlusIcon className="h-5 w-5 mr-2" />
                                         Create First Session
@@ -246,22 +250,24 @@ const SubjectSessions = () => {
                                             </div>
 
                                             {/* Edit/Delete Buttons */}
-                                            <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={(e) => handleEditSession(e, session)}
-                                                    className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition"
-                                                    title="Edit session"
-                                                >
-                                                    <PencilIcon className="h-4 w-4 text-blue-600" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => handleDeleteSession(e, session.id)}
-                                                    className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition"
-                                                    title="Delete session"
-                                                >
-                                                    <TrashIcon className="h-4 w-4 text-red-600" />
-                                                </button>
-                                            </div>
+                                            {(user?.role === 'admin' || user?.role === 'teacher') && (
+                                                <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={(e) => handleEditSession(e, session)}
+                                                        className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition"
+                                                        title="Edit session"
+                                                    >
+                                                        <PencilIcon className="h-4 w-4 text-blue-600" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleDeleteSession(e, session.id)}
+                                                        className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition"
+                                                        title="Delete session"
+                                                    >
+                                                        <TrashIcon className="h-4 w-4 text-red-600" />
+                                                    </button>
+                                                </div>
+                                            )}
 
                                             <span className="text-3xl font-bold text-blue-600 mb-1">
                                                 {session.session_no}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { regionService, classService } from '../services';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import AddClassModal from '../components/AddClassModal';
 import EditClassModal from '../components/EditClassModal';
@@ -15,6 +16,7 @@ import {
 const GradeClasses = () => {
     const { regionId, category } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const ALL_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
 
@@ -124,14 +126,28 @@ const GradeClasses = () => {
     };
 
     const getClassesForCategory = (category) => {
-        return classes.filter(cls => {
+        let filteredClasses = classes.filter(cls => {
             const name = cls.name.toUpperCase();
             return name.startsWith(category);
         });
+
+        // Filter for student: only show their assigned class
+        if (user?.role === 'student' && user?.class_id) {
+            filteredClasses = filteredClasses.filter(cls => cls.id === user.class_id);
+        }
+
+        return filteredClasses;
     };
 
     const getCategoryGrades = () => {
-        return ALL_GRADES.filter(grade => grade.startsWith(category));
+        let grades = ALL_GRADES.filter(grade => grade.startsWith(category));
+        
+        // Filter for student: only show their assigned grade
+        if (user?.role === 'student' && user?.grade) {
+            grades = grades.filter(g => g === user.grade);
+        }
+        
+        return grades;
     };
 
     return (
@@ -154,13 +170,15 @@ const GradeClasses = () => {
 
                         {/* Navigation and action buttons */}
                         <div className="flex items-center justify-between mb-6">
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-[#6B7280] text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-[#5B6170] transition flex items-center"
-                            >
-                                <PlusIcon className="h-4 w-4 mr-2" />
-                                Add {category} Class
-                            </button>
+                            {user?.role === 'admin' && (
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="bg-[#6B7280] text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-[#5B6170] transition flex items-center"
+                                >
+                                    <PlusIcon className="h-4 w-4 mr-2" />
+                                    Add {category} Class
+                                </button>
+                            )}
                         </div>
 
                         {/* Region Info Card */}
@@ -267,7 +285,7 @@ const GradeClasses = () => {
                                         </p>
                                         <button
                                             onClick={() => setIsAddModalOpen(true)}
-                                            className="bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto"
+                                            className={`bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto ${user?.role !== 'admin' ? 'hidden' : ''}`}
                                         >
                                             <PlusIcon className="h-5 w-5 mr-2" />
                                             Create First {category} Class

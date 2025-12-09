@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import AddNotificationModal from '../components/AddNotificationModal';
 import { notificationService } from '../services';
+import { useAuth } from '../context/AuthContext';
 import {
     BellIcon,
     PlusIcon,
@@ -22,6 +23,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Notifications = () => {
+    const { user } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [filteredNotifications, setFilteredNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,8 +48,10 @@ const Notifications = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchNotifications();
-    }, [currentPage, selectedType]);
+        if (user) {
+            fetchNotifications();
+        }
+    }, [currentPage, selectedType, user]);
 
     useEffect(() => {
         applyFilters();
@@ -65,9 +69,26 @@ const Notifications = () => {
                 params.type = selectedType;
             }
 
-            const data = await notificationService.getAllNotifications(params);
-            setNotifications(data.notifications || []);
-            setTotalPages(data.total_pages || 1);
+            let fetchedNotifications = [];
+            let fetchedTotalPages = 1;
+
+            if (user?.role === 'admin') {
+                const data = await notificationService.getAllNotifications(params);
+                fetchedNotifications = data.notifications || [];
+                fetchedTotalPages = data.total_pages || 1;
+            } else {
+                const data = await notificationService.getMyNotifications(params);
+                // Normalize data structure for non-admins
+                fetchedNotifications = Array.isArray(data) ? data.map(item => ({
+                    ...item.notification,
+                    is_read: item.is_read,
+                    user_notification_id: item.user_notification_id
+                })) : [];
+                fetchedTotalPages = 1; // Backend doesn't return total pages for my-notifications
+            }
+
+            setNotifications(fetchedNotifications);
+            setTotalPages(fetchedTotalPages);
         } catch (err) {
             console.error('Error fetching notifications:', err);
             setError('Failed to fetch notifications');
@@ -269,13 +290,15 @@ const Notifications = () => {
                         </div>
 
                         {/* Add Button */}
-                        <button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition flex items-center gap-2"
-                        >
-                            <PlusIcon className="h-5 w-5" />
-                            ADD NOTIFICATION
-                        </button>
+                        {user?.role === 'admin' && (
+                            <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition flex items-center gap-2"
+                            >
+                                <PlusIcon className="h-5 w-5" />
+                                ADD NOTIFICATION
+                            </button>
+                        )}
                     </div>
 
                     {/* Error Display */}
@@ -304,7 +327,7 @@ const Notifications = () => {
                                             ? 'Try adjusting your filters'
                                             : 'Create your first notification to get started'}
                                     </p>
-                                    {!searchTerm && !selectedType && (
+                                    {!searchTerm && !selectedType && user?.role === 'admin' && (
                                         <button
                                             onClick={() => setIsAddModalOpen(true)}
                                             className="bg-[#6B7280] text-white px-4 py-2 rounded-lg hover:bg-[#5B6170] transition-colors flex items-center mx-auto gap-2"
@@ -328,9 +351,11 @@ const Notifications = () => {
                                                 </div>
 
                                                 {/* Edit Button (Inside) */}
-                                                <button className="text-white/70 hover:text-white transition-colors p-1 absolute top-4 right-4">
-                                                    <PencilIcon className="h-5 w-5" />
-                                                </button>
+                                                {user?.role === 'admin' && (
+                                                    <button className="text-white/70 hover:text-white transition-colors p-1 absolute top-4 right-4">
+                                                        <PencilIcon className="h-5 w-5" />
+                                                    </button>
+                                                )}
 
                                                 <div className="flex items-start gap-4">
                                                     {/* Icon Container */}
@@ -369,22 +394,24 @@ const Notifications = () => {
                                                         </div>
 
                                                         {/* Recipients Toggle */}
-                                                        <button
-                                                            onClick={() => toggleRecipients(notification.id)}
-                                                            className="flex items-center gap-2 text-xs text-white/80 hover:text-white mt-2 font-medium transition-colors"
-                                                        >
-                                                            <UsersIcon className="h-3.5 w-3.5" />
-                                                            <span>
-                                                                {expandedNotifications[notification.id] ? 'Hide' : 'Show'} Recipients
-                                                            </span>
-                                                            {expandedNotifications[notification.id]
-                                                                ? <ChevronUpIcon className="h-3.5 w-3.5" />
-                                                                : <ChevronDownIcon className="h-3.5 w-3.5" />
-                                                            }
-                                                        </button>
+                                                        {user?.role === 'admin' && (
+                                                            <button
+                                                                onClick={() => toggleRecipients(notification.id)}
+                                                                className="flex items-center gap-2 text-xs text-white/80 hover:text-white mt-2 font-medium transition-colors"
+                                                            >
+                                                                <UsersIcon className="h-3.5 w-3.5" />
+                                                                <span>
+                                                                    {expandedNotifications[notification.id] ? 'Hide' : 'Show'} Recipients
+                                                                </span>
+                                                                {expandedNotifications[notification.id]
+                                                                    ? <ChevronUpIcon className="h-3.5 w-3.5" />
+                                                                    : <ChevronDownIcon className="h-3.5 w-3.5" />
+                                                                }
+                                                            </button>
+                                                        )}
 
                                                         {/* Recipients List */}
-                                                        {expandedNotifications[notification.id] && (
+                                                        {expandedNotifications[notification.id] && user?.role === 'admin' && (
                                                             <div className="mt-3 pt-3 border-t border-white/20">
                                                                 {loadingRecipients[notification.id] ? (
                                                                     <div className="flex items-center gap-2 text-sm text-white/80">
@@ -425,13 +452,15 @@ const Notifications = () => {
                                             </div>
 
                                             {/* Delete Button (Outside) */}
-                                            <button
-                                                onClick={() => handleDeleteNotification(notification.id)}
-                                                className="mt-6 p-2 text-gray-400 hover:text-red-600 transition-colors"
-                                                title="Delete notification"
-                                            >
-                                                <TrashIcon className="h-6 w-6" />
-                                            </button>
+                                            {user?.role === 'admin' && (
+                                                <button
+                                                    onClick={() => handleDeleteNotification(notification.id)}
+                                                    className="mt-6 p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                                    title="Delete notification"
+                                                >
+                                                    <TrashIcon className="h-6 w-6" />
+                                                </button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
