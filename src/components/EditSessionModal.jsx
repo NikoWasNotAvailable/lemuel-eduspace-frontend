@@ -39,7 +39,7 @@ const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) =
     return (
         <div className="relative z-50">
             {/* Backdrop */}
-            <div className="fixed inset-0 bg-black/30" aria-hidden="true" onClick={handleClose} />
+            <div className="fixed inset-0 bg-black/10 backdrop-blur-sm" aria-hidden="true" onClick={handleClose} />
 
             {/* Full-screen container to center the panel */}
             <div className="fixed inset-0 flex items-center justify-center p-4">

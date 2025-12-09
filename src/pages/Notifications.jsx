@@ -334,7 +334,7 @@ const Notifications = () => {
 
                                                 <div className="flex items-start gap-4">
                                                     {/* Icon Container */}
-                                                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm flex-shrink-0">
+                                                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shrink-0">
                                                         {getTypeIcon(notification.type)}
                                                     </div>
 
