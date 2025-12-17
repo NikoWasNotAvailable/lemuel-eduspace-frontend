@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
+    const VALID_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
+
     const [formData, setFormData] = useState({
         name: '',
         region_id: ''
     });
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (isOpen && classData) {
@@ -13,11 +16,37 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
                 name: classData.name || '',
                 region_id: classData.region_id || classData.region?.id || ''
             });
+            setErrors({});
         }
     }, [isOpen, classData]);
 
+    const validateClassName = (name) => {
+        if (!name) return false;
+        const upperName = name.toUpperCase();
+        return VALID_GRADES.some(grade => upperName.startsWith(grade));
+    };
+
+    const handleNameChange = (e) => {
+        const newName = e.target.value;
+        setFormData({ ...formData, name: newName });
+
+        // Clear error when user starts typing
+        if (errors.name) {
+            setErrors({ ...errors, name: '' });
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validate class name
+        if (!validateClassName(formData.name)) {
+            setErrors({
+                name: `Class name must start with a valid grade prefix: ${VALID_GRADES.join(', ')}`
+            });
+            return;
+        }
+
         onSubmit({
             ...formData,
             region_id: parseInt(formData.region_id)
@@ -26,6 +55,7 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
 
     const handleClose = () => {
         setFormData({ name: '', region_id: '' });
+        setErrors({});
         onClose();
     };
 
@@ -55,18 +85,25 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                                Class Name
+                                Class Name <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="name"
                                 id="name"
                                 required
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3"
+                                className={`mt-1 block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3 ${errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                    }`}
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={handleNameChange}
                                 placeholder="e.g. SD1A, TKA, SMP1B"
                             />
+                            {errors.name && (
+                                <p className="mt-2 text-sm text-red-600">{errors.name}</p>
+                            )}
+                            <p className="mt-1 text-xs text-gray-500">
+                                Must start with: {VALID_GRADES.join(', ')}
+                            </p>
                         </div>
 
                         <div className="mt-6 flex justify-end space-x-3">
