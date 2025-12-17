@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { subjectService, sessionService, classService } from '../services';
+import { subjectService, sessionService, classService, teacherSubjectService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import AddSessionModal from '../components/AddSessionModal';
@@ -22,6 +22,7 @@ const SubjectSessions = () => {
     const [subjectInfo, setSubjectInfo] = useState(null);
     const [classInfo, setClassInfo] = useState(null);
     const [sessions, setSessions] = useState([]);
+    const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -48,16 +49,18 @@ const SubjectSessions = () => {
             const subjectData = await subjectService.getSubjectById(subjectId);
             setSubjectInfo(subjectData);
 
-            // Load sessions and class info in parallel
-            const [sessionsData, classData] = await Promise.all([
+            // Load sessions, class info, and teachers in parallel
+            const [sessionsData, classData, teachersData] = await Promise.all([
                 sessionService.getSessionsBySubject(subjectId),
-                classService.getClassById(subjectData.class_id)
+                classService.getClassById(subjectData.class_id),
+                teacherSubjectService.getSubjectTeachers(subjectId)
             ]);
 
             // Handle potential pagination response structure or direct array
             const sessionsList = Array.isArray(sessionsData) ? sessionsData : (sessionsData?.sessions || sessionsData?.items || []);
             setSessions(sessionsList);
             setClassInfo(classData);
+            setTeachers(teachersData?.teachers || []);
         } catch (error) {
             console.error('Failed to load data:', error);
             setError('Failed to load subject information. Please try again.');
@@ -162,16 +165,27 @@ const SubjectSessions = () => {
                 <div className="flex-1 transition-all duration-300">
                     <div className="p-8">
                         {/* Header with back button */}
-                        <div className="mb-6 flex justify-start">
-                            <button
-                                onClick={handleBackToSubjects}
-                                className="p-2 hover:bg-gray-100 rounded-lg"
-                            >
-                                <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
-                            </button>
-                            <h1 className="text-2xl font-semibold text-gray-800 ml-4">
-                                {subjectInfo ? `${subjectInfo.name} Sessions` : 'Subject Sessions'}
-                            </h1>
+                        <div className="mb-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <button
+                                        onClick={handleBackToSubjects}
+                                        className="p-2 hover:bg-gray-100 rounded-lg"
+                                    >
+                                        <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
+                                    </button>
+                                    <div className="ml-4">
+                                        <h1 className="text-2xl font-semibold text-gray-800">
+                                            {subjectInfo ? `${subjectInfo.name} Sessions` : 'Subject Sessions'}
+                                        </h1>
+                                        {teachers.length > 0 && (
+                                            <p className="text-sm text-gray-500 mt-0.5">
+                                                {teachers.map(t => t.name).join(', ')}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Navigation and action buttons */}

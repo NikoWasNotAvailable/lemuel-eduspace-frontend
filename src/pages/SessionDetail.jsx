@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { sessionService, sessionAttachmentService, subjectService, assignmentService } from '../services';
+import { sessionService, sessionAttachmentService, subjectService, assignmentService, teacherSubjectService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddAttachmentModal from '../components/AddAttachmentModal';
 import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
@@ -27,6 +27,7 @@ const SessionDetail = () => {
     const [session, setSession] = useState(null);
     const [subjectInfo, setSubjectInfo] = useState(null);
     const [attachments, setAttachments] = useState([]);
+    const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -52,16 +53,18 @@ const SessionDetail = () => {
             setLoading(true);
             setError(null);
 
-            const [sessionData, attachmentsData, subjectData] = await Promise.all([
+            const [sessionData, attachmentsData, subjectData, teachersData] = await Promise.all([
                 sessionService.getSessionById(sessionId),
                 sessionAttachmentService.getSessionAttachments(sessionId),
-                subjectService.getSubjectById(subjectId)
+                subjectService.getSubjectById(subjectId),
+                teacherSubjectService.getSubjectTeachers(subjectId)
             ]);
 
             setSession(sessionData);
             setSubjectInfo(subjectData);
             // Handle response structure { attachments: [], total: 0, session_id: 0 }
             setAttachments(attachmentsData.attachments || []);
+            setTeachers(teachersData?.teachers || []);
 
             // Load student submissions if user is a student
             if (user?.role === 'student') {
@@ -254,20 +257,18 @@ const SessionDetail = () => {
 
                 {/* Sub-header / Subject Info */}
                 <div className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4 text-left">
-                        {subjectInfo?.name || 'Subject Name'}
-                    </h2>
-
-                    <div className="flex items-center mb-6">
-                        <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xl mr-4">
-                            {user?.name?.[0] || 'U'}
-                        </div>
-                        <span className="font-bold text-gray-800 uppercase">
-                            {user?.name || 'USER'}
-                        </span>
+                    <div className="mb-6">
+                        <h2 className="text-xl font-semibold text-gray-800">
+                            {subjectInfo?.name || 'Subject Name'}
+                        </h2>
+                        {teachers.length > 0 && (
+                            <p className="text-sm text-gray-500 mt-0.5">
+                                {teachers.map(t => t.name).join(', ')}
+                            </p>
+                        )}
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900">
                         Session {session?.session_no}
                     </h2>
                 </div>
