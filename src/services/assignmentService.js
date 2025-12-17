@@ -31,5 +31,13 @@ export const assignmentService = {
     gradeSubmission: async (submissionId, gradeData) => {
         const response = await api.put(`/assignments/${submissionId}/grade`, gradeData);
         return response.data;
+    },
+
+    // Download submission file
+    downloadSubmission: async (submissionId) => {
+        const response = await api.get(`/assignments/${submissionId}/download`, {
+            responseType: 'blob'
+        });
+        return response;
     }
 };

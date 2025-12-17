@@ -4,6 +4,7 @@ import { sessionService, sessionAttachmentService, subjectService, assignmentSer
 import Layout from '../components/Layout/Layout';
 import AddAttachmentModal from '../components/AddAttachmentModal';
 import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
+import GradeAssignmentModal from '../components/GradeAssignmentModal';
 import { useAuth } from '../context/AuthContext';
 import {
     ArrowLeftIcon,
@@ -13,7 +14,9 @@ import {
     LightBulbIcon,
     LinkIcon,
     PlusIcon,
-    TrashIcon
+    TrashIcon,
+    CheckCircleIcon,
+    UserIcon
 } from '@heroicons/react/24/outline';
 
 const SessionDetail = () => {
@@ -33,6 +36,10 @@ const SessionDetail = () => {
     const [isSubmitAssignmentModalOpen, setIsSubmitAssignmentModalOpen] = useState(false);
     const [submittingAssignment, setSubmittingAssignment] = useState(false);
     const [mySubmissions, setMySubmissions] = useState([]);
+    const [allSubmissions, setAllSubmissions] = useState([]);
+    const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
+    const [gradingSubmission, setGradingSubmission] = useState(null);
+    const [savingGrade, setSavingGrade] = useState(false);
 
     useEffect(() => {
         if (sessionId && subjectId) {
@@ -62,6 +69,11 @@ const SessionDetail = () => {
                 // Filter submissions for this session
                 const sessionSubmissions = submissions.filter(s => s.session_id === parseInt(sessionId));
                 setMySubmissions(sessionSubmissions);
+            }
+            // Load all submissions if user is teacher/admin
+            else if (user?.role === 'teacher' || user?.role === 'admin') {
+                const submissions = await assignmentService.getSessionSubmissions(sessionId);
+                setAllSubmissions(submissions);
             }
         } catch (err) {
             console.error('Failed to load session data:', err);
@@ -134,6 +146,46 @@ const SessionDetail = () => {
             alert('Failed to submit assignment. Please try again.');
         } finally {
             setSubmittingAssignment(false);
+        }
+    };
+
+    const handleOpenGradeModal = (submission) => {
+        setGradingSubmission(submission);
+        setIsGradeModalOpen(true);
+    };
+
+    const handleGradeSubmission = async (gradeData) => {
+        try {
+            setSavingGrade(true);
+            await assignmentService.gradeSubmission(gradingSubmission.id, gradeData);
+            setIsGradeModalOpen(false);
+            setGradingSubmission(null);
+            // Reload submissions
+            const submissions = await assignmentService.getSessionSubmissions(sessionId);
+            setAllSubmissions(submissions);
+            alert('Grade saved successfully!');
+        } catch (err) {
+            console.error('Failed to grade submission:', err);
+            alert('Failed to save grade. Please try again.');
+        } finally {
+            setSavingGrade(false);
+        }
+    };
+
+    const handleDownloadSubmission = async (submission) => {
+        try {
+            const response = await assignmentService.downloadSubmission(submission.id);
+            // Create a blob link to download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', submission.filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (err) {
+            console.error('Download failed:', err);
+            alert('Failed to download file');
         }
     };
 
@@ -238,9 +290,9 @@ const SessionDetail = () => {
                                 <div className="space-y-3">
                                     {mySubmissions.map((submission) => (
                                         <div key={submission.id} className="bg-white p-4 rounded-lg border border-green-300">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="font-medium text-gray-900">{submission.file_name}</p>
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <p className="font-medium text-gray-900">{submission.filename}</p>
                                                     <p className="text-sm text-gray-600">
                                                         Submitted: {new Date(submission.submitted_at).toLocaleString()}
                                                     </p>
@@ -249,17 +301,101 @@ const SessionDetail = () => {
                                                             Grade: {submission.grade}/100
                                                         </p>
                                                     )}
+                                                    {submission.feedback && (
+                                                        <p className="text-xs text-gray-600 mt-1 italic">
+                                                            Feedback: {submission.feedback}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${submission.grade !== null ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                    {submission.grade !== null ? 'Graded' : 'Pending'}
-                                                </span>
+                                                <div className="flex flex-col items-end space-y-2 ml-4">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${submission.grade !== null ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                        }`}>
+                                                        {submission.grade !== null ? 'Graded' : 'Pending'}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleDownloadSubmission(submission)}
+                                                        className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 hover:bg-green-700 transition-colors"
+                                                        title="Download your submission"
+                                                    >
+                                                        <ArrowDownTrayIcon className="h-4 w-4" />
+                                                        <span>Download</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
                                 <p className="text-gray-600 text-center py-4">No submissions yet. Upload your assignment above.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Teacher Assignment Submissions Section */}
+                {(user?.role === 'teacher' || user?.role === 'admin') && (
+                    <div className="max-w-4xl mx-auto mb-8">
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Student Submissions</h3>
+                                <span className="text-sm text-gray-600">
+                                    {allSubmissions.length} submission{allSubmissions.length !== 1 ? 's' : ''}
+                                </span>
+                            </div>
+                            {allSubmissions.length > 0 ? (
+                                <div className="space-y-3">
+                                    {allSubmissions.map((submission) => (
+                                        <div key={submission.id} className="bg-white p-4 rounded-lg border border-blue-300">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center mb-2">
+                                                        <UserIcon className="h-5 w-5 text-gray-500 mr-2" />
+                                                        <p className="font-semibold text-gray-900">{submission.student_name || 'Unknown Student'}</p>
+                                                    </div>
+                                                    <p className="text-sm text-gray-700 mb-1">File: {submission.filename}</p>
+                                                    <p className="text-xs text-gray-600">
+                                                        Submitted: {new Date(submission.submitted_at).toLocaleString()}
+                                                    </p>
+                                                    {submission.grade !== null && submission.grade !== undefined && (
+                                                        <div className="mt-2">
+                                                            <p className="text-sm font-semibold text-blue-700">
+                                                                Grade: {submission.grade}/100
+                                                            </p>
+                                                            {submission.feedback && (
+                                                                <p className="text-xs text-gray-600 mt-1">
+                                                                    Feedback: {submission.feedback}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col items-end space-y-2 ml-4">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${submission.grade !== null ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                        }`}>
+                                                        {submission.grade !== null ? 'Graded' : 'Pending'}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleDownloadSubmission(submission)}
+                                                        className="bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 hover:bg-gray-700 transition-colors"
+                                                        title="Download submission"
+                                                    >
+                                                        <ArrowDownTrayIcon className="h-4 w-4" />
+                                                        <span>Download</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleOpenGradeModal(submission)}
+                                                        className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 hover:bg-blue-700 transition-colors"
+                                                    >
+                                                        <CheckCircleIcon className="h-4 w-4" />
+                                                        <span>{submission.grade !== null ? 'Edit Grade' : 'Grade'}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-600 text-center py-4">No student submissions yet.</p>
                             )}
                         </div>
                     </div>
@@ -356,6 +492,18 @@ const SessionDetail = () => {
                 onSubmit={handleSubmitAssignment}
                 loading={submittingAssignment}
                 sessionId={sessionId}
+            />
+
+            {/* Grade Assignment Modal */}
+            <GradeAssignmentModal
+                isOpen={isGradeModalOpen}
+                onClose={() => {
+                    setIsGradeModalOpen(false);
+                    setGradingSubmission(null);
+                }}
+                onSubmit={handleGradeSubmission}
+                loading={savingGrade}
+                submission={gradingSubmission}
             />
         </Layout>
     );
