@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { sessionService, sessionAttachmentService, subjectService } from '../services';
+import { sessionService, sessionAttachmentService, subjectService, assignmentService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddAttachmentModal from '../components/AddAttachmentModal';
+import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
 import { useAuth } from '../context/AuthContext';
 import {
     ArrowLeftIcon,
@@ -29,6 +30,9 @@ const SessionDetail = () => {
     // Modal states
     const [isAddAttachmentModalOpen, setIsAddAttachmentModalOpen] = useState(false);
     const [uploadingAttachment, setUploadingAttachment] = useState(false);
+    const [isSubmitAssignmentModalOpen, setIsSubmitAssignmentModalOpen] = useState(false);
+    const [submittingAssignment, setSubmittingAssignment] = useState(false);
+    const [mySubmissions, setMySubmissions] = useState([]);
 
     useEffect(() => {
         if (sessionId && subjectId) {
@@ -51,6 +55,14 @@ const SessionDetail = () => {
             setSubjectInfo(subjectData);
             // Handle response structure { attachments: [], total: 0, session_id: 0 }
             setAttachments(attachmentsData.attachments || []);
+
+            // Load student submissions if user is a student
+            if (user?.role === 'student') {
+                const submissions = await assignmentService.getMySubmissions();
+                // Filter submissions for this session
+                const sessionSubmissions = submissions.filter(s => s.session_id === parseInt(sessionId));
+                setMySubmissions(sessionSubmissions);
+            }
         } catch (err) {
             console.error('Failed to load session data:', err);
             setError('Failed to load session information.');
@@ -104,6 +116,24 @@ const SessionDetail = () => {
         } catch (err) {
             console.error('Failed to delete attachment:', err);
             alert('Failed to delete attachment. Please try again.');
+        }
+    };
+
+    const handleSubmitAssignment = async (file) => {
+        try {
+            setSubmittingAssignment(true);
+            await assignmentService.submitAssignment(sessionId, file);
+            setIsSubmitAssignmentModalOpen(false);
+            // Reload student submissions
+            const submissions = await assignmentService.getMySubmissions();
+            const sessionSubmissions = submissions.filter(s => s.session_id === parseInt(sessionId));
+            setMySubmissions(sessionSubmissions);
+            alert('Assignment submitted successfully!');
+        } catch (err) {
+            console.error('Failed to submit assignment:', err);
+            alert('Failed to submit assignment. Please try again.');
+        } finally {
+            setSubmittingAssignment(false);
         }
     };
 
@@ -190,6 +220,51 @@ const SessionDetail = () => {
                     </h2>
                 </div>
 
+                {/* Student Assignment Submission Section */}
+                {user?.role === 'student' && (
+                    <div className="max-w-4xl mx-auto mb-8">
+                        <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Your Assignment Submissions</h3>
+                                <button
+                                    onClick={() => setIsSubmitAssignmentModalOpen(true)}
+                                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors"
+                                >
+                                    <ArrowUpTrayIcon className="h-5 w-5" />
+                                    <span>Upload Assignment</span>
+                                </button>
+                            </div>
+                            {mySubmissions.length > 0 ? (
+                                <div className="space-y-3">
+                                    {mySubmissions.map((submission) => (
+                                        <div key={submission.id} className="bg-white p-4 rounded-lg border border-green-300">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{submission.file_name}</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        Submitted: {new Date(submission.submitted_at).toLocaleString()}
+                                                    </p>
+                                                    {submission.grade !== null && submission.grade !== undefined && (
+                                                        <p className="text-sm font-semibold text-green-700 mt-1">
+                                                            Grade: {submission.grade}/100
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${submission.grade !== null ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                    {submission.grade !== null ? 'Graded' : 'Pending'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-600 text-center py-4">No submissions yet. Upload your assignment above.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Attachments Container */}
                 <div className="max-w-4xl mx-auto bg-[#A9B5DF] rounded-3xl overflow-hidden shadow-lg">
                     <div className="bg-[#A9B5DF] p-4 flex items-center justify-between border-b border-white/20">
@@ -271,6 +346,15 @@ const SessionDetail = () => {
                 onClose={() => setIsAddAttachmentModalOpen(false)}
                 onSubmit={handleAddAttachment}
                 loading={uploadingAttachment}
+                sessionId={sessionId}
+            />
+
+            {/* Submit Assignment Modal */}
+            <SubmitAssignmentModal
+                isOpen={isSubmitAssignmentModalOpen}
+                onClose={() => setIsSubmitAssignmentModalOpen(false)}
+                onSubmit={handleSubmitAssignment}
+                loading={submittingAssignment}
                 sessionId={sessionId}
             />
         </Layout>

@@ -1,0 +1,163 @@
+import React, { useState, useRef } from 'react';
+import { XMarkIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
+
+const SubmitAssignmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) => {
+    const [file, setFile] = useState(null);
+    const [dragActive, setDragActive] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!file) {
+            alert('Please select a file to upload');
+            return;
+        }
+
+        onSubmit(file);
+    };
+
+    const handleClose = () => {
+        setFile(null);
+        onClose();
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="relative z-50">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/10 backdrop-blur-sm" aria-hidden="true" onClick={handleClose} />
+
+            {/* Full-screen container to center the panel */}
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+                {/* The actual dialog panel */}
+                <div className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                            Submit Assignment
+                        </h3>
+                        <button
+                            onClick={handleClose}
+                            className="text-gray-400 hover:text-gray-500"
+                        >
+                            <XMarkIcon className="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* File Drop Zone */}
+                        <div
+                            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
+                                ? 'border-blue-500 bg-blue-50'
+                                : file
+                                    ? 'border-green-500 bg-green-50'
+                                    : 'border-gray-300 hover:border-gray-400'
+                                }`}
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                        >
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
+
+                            {file ? (
+                                <div className="space-y-2">
+                                    <DocumentIcon className="mx-auto h-12 w-12 text-green-500" />
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {file.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        {formatFileSize(file.size)}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFile(null)}
+                                        className="text-sm text-red-600 hover:text-red-700"
+                                    >
+                                        Remove file
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                    <p className="text-sm text-gray-600">
+                                        Drag and drop your assignment here, or{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="text-blue-600 hover:text-blue-700 font-medium"
+                                        >
+                                            browse
+                                        </button>
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        Supports PDF, DOC, DOCX, images, ZIP files, etc.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-6 flex justify-end space-x-3">
+                            <button
+                                type="button"
+                                className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                onClick={handleClose}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={loading || !file}
+                                className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Submitting...' : 'Submit Assignment'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default SubmitAssignmentModal;
