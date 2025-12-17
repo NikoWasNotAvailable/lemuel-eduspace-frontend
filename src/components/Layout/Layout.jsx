@@ -19,11 +19,20 @@ const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout, hasAnyRole } = useAuth();
     const location = useLocation();
 
+    const getClassesHref = () => {
+        // Students go directly to their class page
+        if (user?.role === 'student' && user?.class_id && user?.region_id) {
+            return `/classes/${user.region_id}/class/${user.class_id}`;
+        }
+        // Everyone else goes to regions list
+        return '/classes';
+    };
+
     const navigation = [
         { name: 'Home', href: '/dashboard', icon: HomeIcon, roles: ['teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Students', href: '/students', icon: UserIcon, roles: ['admin'] },
         { name: 'Teachers', href: '/teachers', icon: UserGroupIcon, roles: ['admin'] },
-        { name: 'Classes', href: '/classes', icon: AcademicCapIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
+        { name: 'Classes', href: getClassesHref(), icon: AcademicCapIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Calendar', href: '/calendar', icon: CalendarIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Banner', href: '/banner', icon: HomeIcon, roles: ['admin'] },
         { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },

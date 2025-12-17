@@ -32,6 +32,13 @@ const GradeClasses = () => {
     const [editingClass, setEditingClass] = useState(null);
     const [updatingClass, setUpdatingClass] = useState(false);
 
+    // Redirect students to their class page
+    useEffect(() => {
+        if (user?.role === 'student' && user?.class_id && user?.region_id) {
+            navigate(`/classes/${user.region_id}/class/${user.class_id}`, { replace: true });
+        }
+    }, [user, navigate]);
+
     // Load region info and classes on component mount
     useEffect(() => {
         if (regionId) {
@@ -157,13 +164,15 @@ const GradeClasses = () => {
                     <div className="p-8">
                         {/* Header with back button */}
                         <div className="mb-6 flex justify-start">
-                            <button
-                                onClick={() => navigate(`/classes/${regionId}`)}
-                                className="p-2 hover:bg-gray-100 rounded-lg"
-                            >
-                                <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
-                            </button>
-                            <h1 className="text-2xl font-semibold text-gray-800 ml-4">
+                            {user?.role !== 'student' && (
+                                <button
+                                    onClick={() => navigate(`/classes/${regionId}`)}
+                                    className="p-2 hover:bg-gray-100 rounded-lg"
+                                >
+                                    <ArrowLeftIcon className="h-6 w-6 text-gray-700" />
+                                </button>
+                            )}
+                            <h1 className={`text-2xl font-semibold text-gray-800 ${user?.role !== 'student' ? 'ml-4' : ''}`}>
                                 {regionInfo ? `${category} Classes in ${regionInfo.name}` : `${category} Classes`}
                             </h1>
                         </div>

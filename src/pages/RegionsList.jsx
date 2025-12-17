@@ -27,6 +27,13 @@ const RegionsList = () => {
     const [editingRegion, setEditingRegion] = useState(null);
     const [updatingRegion, setUpdatingRegion] = useState(false);
 
+    // Redirect students to their class page
+    useEffect(() => {
+        if (user?.role === 'student' && user?.class_id && user?.region_id) {
+            navigate(`/classes/${user.region_id}/class/${user.class_id}`, { replace: true });
+        }
+    }, [user, navigate]);
+
     // Load regions on component mount
     useEffect(() => {
         loadRegions();
