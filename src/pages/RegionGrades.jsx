@@ -33,10 +33,12 @@ const RegionGrades = () => {
     const [editingClass, setEditingClass] = useState(null);
     const [updatingClass, setUpdatingClass] = useState(false);
 
-    // Redirect students to their class page
+    // Redirect students to their class page and teachers to their classes page
     useEffect(() => {
         if (user?.role === 'student' && user?.class_id && user?.region_id) {
             navigate(`/classes/${user.region_id}/class/${user.class_id}`, { replace: true });
+        } else if (user?.role === 'teacher') {
+            navigate('/teacher-classes', { replace: true });
         }
     }, [user, navigate]);
 

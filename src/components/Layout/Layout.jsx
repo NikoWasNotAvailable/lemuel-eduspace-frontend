@@ -24,7 +24,11 @@ const Sidebar = ({ isOpen, onClose }) => {
         if (user?.role === 'student' && user?.class_id && user?.region_id) {
             return `/classes/${user.region_id}/class/${user.class_id}`;
         }
-        // Everyone else goes to regions list
+        // Teachers go to their classes/subjects page
+        if (user?.role === 'teacher') {
+            return '/teacher-classes';
+        }
+        // Admin and others go to regions list
         return '/classes';
     };
 

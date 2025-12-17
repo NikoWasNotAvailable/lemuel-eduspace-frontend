@@ -22,6 +22,7 @@ import SessionDetail from './pages/SessionDetail';
 import Notifications from './pages/Notifications';
 import Calendar from './pages/Calendar';
 import Banners from './pages/Banners';
+import TeacherClasses from './pages/TeacherClasses';
 import './App.css'
 
 function App() {
@@ -104,6 +105,15 @@ function App() {
             /> */}
 
             {/* New structured navigation routes */}
+            <Route
+              path="/teacher-classes"
+              element={
+                <ProtectedRoute requiredRoles={['teacher']}>
+                  <TeacherClasses />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/classes"
               element={
