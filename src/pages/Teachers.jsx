@@ -245,8 +245,8 @@ const Teachers = () => {
                                                 <td className="px-6 py-4 text-gray-700">{teacher.region || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">
                                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${teacher.status === 'active'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {teacher.status || 'inactive'}
                                                     </span>

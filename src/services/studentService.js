@@ -11,6 +11,7 @@ export const studentService = {
         if (filters.grade) params.append('grade', filters.grade);
         if (filters.gender) params.append('gender', filters.gender);
         if (filters.region_id) params.append('region_id', filters.region_id);
+        if (filters.class_id) params.append('class_id', filters.class_id);
         if (filters.search) params.append('search', filters.search);
 
         const response = await api.get(`/users/?${params.toString()}`);

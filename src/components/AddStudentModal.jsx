@@ -88,8 +88,17 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
         if (!formData.nis.trim()) newErrors.nis = 'NIS is required';
         if (!formData.name.trim()) newErrors.name = 'Name is required';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
-        if (!formData.password.trim()) newErrors.password = 'Password is required';
-        if (!formData.parent_password.trim()) newErrors.parent_password = 'Parent password is required';
+        if (!formData.password.trim()) {
+            newErrors.password = 'Password is required';
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        }
+
+        if (!formData.parent_password.trim()) {
+            newErrors.parent_password = 'Parent password is required';
+        } else if (formData.parent_password.length < 8) {
+            newErrors.parent_password = 'Parent password must be at least 8 characters';
+        }
         if (!formData.grade) newErrors.grade = 'Grade is required';
         if (!formData.gender) newErrors.gender = 'Gender is required';
         if (!formData.region_id) newErrors.region_id = 'Region is required';

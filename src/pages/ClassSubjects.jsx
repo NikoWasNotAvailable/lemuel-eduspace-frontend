@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { subjectService, classService, teacherSubjectService } from '../services';
+import { subjectService, classService, teacherSubjectService, studentService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import AddSubjectModal from '../components/AddSubjectModal';
@@ -24,6 +24,7 @@ const ClassSubjects = () => {
 
     const [classInfo, setClassInfo] = useState(null);
     const [subjects, setSubjects] = useState([]);
+    const [students, setStudents] = useState([]);
     const [subjectTeachers, setSubjectTeachers] = useState({}); // Map of subjectId -> teachers[]
     const [teacherAssignments, setTeacherAssignments] = useState([]); // For filtering teacher's subjects
     const [loading, setLoading] = useState(true);
@@ -56,13 +57,15 @@ const ClassSubjects = () => {
             setError(null);
 
             // Load class info and subjects in parallel
-            const [classData, subjectsData] = await Promise.all([
+            const [classData, subjectsData, studentsData] = await Promise.all([
                 classService.getClassById(classId),
-                subjectService.getSubjectsByClass(classId)
+                subjectService.getSubjectsByClass(classId),
+                studentService.getStudents({ class_id: classId, limit: 100 })
             ]);
 
             setClassInfo(classData);
             setSubjects(subjectsData);
+            setStudents(studentsData);
 
             // If user is teacher, load their assignments
             if (user?.role === 'teacher') {
@@ -407,6 +410,41 @@ const ClassSubjects = () => {
                                     </div>
                                 );
                             })()
+                        )}
+
+                        {/* Students List */}
+                        {!loading && students.length > 0 && (
+                            <div className="mt-12">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-6">Students in this Class</h2>
+                                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                                    <table className="min-w-full text-sm">
+                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                            <tr>
+                                                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">NIS</th>
+                                                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">Name</th>
+                                                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">Gender</th>
+                                                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {students.map((student) => (
+                                                <tr key={student.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-gray-900 font-medium">{student.nis || '-'}</td>
+                                                    <td className="px-6 py-4 text-gray-700">{student.name}</td>
+                                                    <td className="px-6 py-4 text-gray-700 capitalize">{student.gender}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                            student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {student.status || 'active'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>

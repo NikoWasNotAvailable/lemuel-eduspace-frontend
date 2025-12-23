@@ -74,8 +74,8 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
                 nis: student.nis || '',
                 name: student.name || '',
                 email: student.email || '',
-                password: student.password || '', // Show current password
-                parent_password: student.parent_password || '', // Show current parent password
+                password: '', // Empty for security
+                parent_password: '', // Empty for security
                 role: student.role || 'student',
                 grade: student.grade || '',
                 gender: student.gender || '',
@@ -112,7 +112,13 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
         if (!formData.nis.trim()) newErrors.nis = 'NIS is required';
         if (!formData.name.trim()) newErrors.name = 'Name is required';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
-        if (!formData.parent_password.trim()) newErrors.parent_password = 'Parent password is required';
+        // Password fields are optional for updates
+        if (formData.password && formData.password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        }
+        if (formData.parent_password && formData.parent_password.length < 8) {
+            newErrors.parent_password = 'Parent password must be at least 8 characters';
+        }
         if (!formData.grade) newErrors.grade = 'Grade is required';
         if (!formData.gender) newErrors.gender = 'Gender is required';
         if (!formData.region_id) newErrors.region_id = 'Region is required';
@@ -238,13 +244,13 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
                                 value={formData.password}
                                 onChange={handleInputChange}
                                 className="w-full border border-gray-300 bg-white rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
-                                placeholder="Update password"
+                                placeholder="Leave blank to keep current"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Parent Password <span className="text-red-500">*</span>
+                                Parent Password
                             </label>
                             <input
                                 type="text"
@@ -253,7 +259,7 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
                                 onChange={handleInputChange}
                                 className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.parent_password ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
                                     }`}
-                                placeholder="Update parent password"
+                                placeholder="Leave blank to keep current"
                             />
                             {errors.parent_password && <p className="text-red-500 text-xs mt-2">{errors.parent_password}</p>}
                         </div>

@@ -43,7 +43,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
             setFormData({
                 name: teacher.name || '',
                 email: teacher.email || '',
-                password: teacher.password || '',
+                password: '', // Empty for security
                 gender: teacher.gender || '',
                 region_id: teacher.region_id || '',
                 dob: teacher.dob || '',
@@ -75,7 +75,10 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
 
         if (!formData.name.trim()) newErrors.name = 'Name is required';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
-        if (!formData.password.trim()) newErrors.password = 'Password is required';
+        // Password is optional for updates
+        if (formData.password && formData.password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        }
         if (!formData.gender) newErrors.gender = 'Gender is required';
         if (!formData.region_id) newErrors.region_id = 'Region is required';
         if (!formData.dob) newErrors.dob = 'Date of birth is required';
@@ -187,7 +190,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
                         {/* Password */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Password <span className="text-red-500">*</span>
+                                Password
                             </label>
                             <input
                                 type="text"
@@ -196,7 +199,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
                                 onChange={handleInputChange}
                                 className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
                                     }`}
-                                placeholder="Update password"
+                                placeholder="Leave blank to keep current"
                             />
                             {errors.password && <p className="text-red-500 text-xs mt-2">{errors.password}</p>}
                         </div>

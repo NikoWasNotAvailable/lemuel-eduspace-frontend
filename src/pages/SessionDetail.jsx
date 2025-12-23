@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { sessionService, sessionAttachmentService, subjectService, assignmentService, teacherSubjectService } from '../services';
+import { sessionService, sessionAttachmentService, subjectService, assignmentService, teacherSubjectService, studentService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddAttachmentModal from '../components/AddAttachmentModal';
 import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
@@ -28,6 +28,7 @@ const SessionDetail = () => {
     const [subjectInfo, setSubjectInfo] = useState(null);
     const [attachments, setAttachments] = useState([]);
     const [teachers, setTeachers] = useState([]);
+    const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -75,8 +76,12 @@ const SessionDetail = () => {
             }
             // Load all submissions if user is teacher/admin
             else if (user?.role === 'teacher' || user?.role === 'admin') {
-                const submissions = await assignmentService.getSessionSubmissions(sessionId);
+                const [submissions, classStudents] = await Promise.all([
+                    assignmentService.getSessionSubmissions(sessionId),
+                    studentService.getStudents({ class_id: subjectData.class_id, limit: 100 })
+                ]);
                 setAllSubmissions(submissions);
+                setStudents(classStudents);
             }
         } catch (err) {
             console.error('Failed to load session data:', err);
@@ -397,6 +402,35 @@ const SessionDetail = () => {
                                 </div>
                             ) : (
                                 <p className="text-gray-600 text-center py-4">No student submissions yet.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Missing Submissions Section */}
+                {(user?.role === 'teacher' || user?.role === 'admin') && (
+                    <div className="max-w-4xl mx-auto mb-8">
+                        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">Missing Submissions</h3>
+                                <span className="text-sm text-gray-600">
+                                    {students.filter(s => !allSubmissions.some(sub => sub.student_id === s.id)).length} student{students.filter(s => !allSubmissions.some(sub => sub.student_id === s.id)).length !== 1 ? 's' : ''}
+                                </span>
+                            </div>
+                            {students.filter(s => !allSubmissions.some(sub => sub.student_id === s.id)).length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {students.filter(s => !allSubmissions.some(sub => sub.student_id === s.id)).map((student) => (
+                                        <div key={student.id} className="bg-white p-3 rounded-lg border border-red-200 flex items-center">
+                                            <UserIcon className="h-5 w-5 text-gray-400 mr-3" />
+                                            <div>
+                                                <p className="font-medium text-gray-900">{student.name}</p>
+                                                <p className="text-xs text-gray-500">{student.nis || 'No NIS'}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-600 text-center py-4">All students have submitted!</p>
                             )}
                         </div>
                     </div>
