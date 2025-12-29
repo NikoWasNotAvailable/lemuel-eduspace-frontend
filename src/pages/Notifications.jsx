@@ -294,7 +294,9 @@ const Notifications = () => {
                                     <option value="announcement">Announcement</option>
                                     <option value="assignment">Assignment</option>
                                     <option value="event">Event</option>
-                                    <option value="payment">Payment</option>
+                                    {(['admin', 'teacher', 'parent'].includes(user?.role) || user?.parent_access) && (
+                                        <option value="payment">Payment</option>
+                                    )}
                                 </select>
                             </div>
                         </div>

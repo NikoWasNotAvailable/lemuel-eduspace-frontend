@@ -136,7 +136,11 @@ export const AuthProvider = ({ children }) => {
                 };
             } else {
                 // Other roles response structure
-                user = response.user;
+                user = { ...response.user };
+                // If logged in via parent portal, set parent_access
+                if (userType === 'parent') {
+                    user.parent_access = true;
+                }
             }
 
             // Store token and user data
