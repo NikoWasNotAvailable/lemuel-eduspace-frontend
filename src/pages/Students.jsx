@@ -13,8 +13,11 @@ import {
     PencilIcon,
     TrashIcon,
     XMarkIcon,
-    ClockIcon
+    ClockIcon,
+    UserCircleIcon
 } from '@heroicons/react/24/outline';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Students = () => {
     const [students, setStudents] = useState([]);
@@ -308,6 +311,7 @@ const Students = () => {
                                 <table className="min-w-full text-sm">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
+                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">PHOTO</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">NIS ID</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">FIRST NAME</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">LAST NAME</th>
@@ -327,6 +331,23 @@ const Students = () => {
                                                     : 'hover:bg-gray-50'
                                                     }`}
                                             >
+                                                <td className="px-6 py-4">
+                                                    {student.profile_picture_url ? (
+                                                        <img
+                                                            src={`${API_BASE_URL}${student.profile_picture_url}`}
+                                                            alt={student.name}
+                                                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextSibling.style.display = 'block';
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <UserCircleIcon 
+                                                        className={`w-10 h-10 text-gray-400 ${student.profile_picture_url ? 'hidden' : ''}`}
+                                                    />
+                                                </td>
                                                 <td className="px-6 py-4 text-gray-900 font-medium">{student.nis || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">{student.name?.split(' ')[0] || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">{student.name?.split(' ').slice(1).join(' ') || ''}</td>
@@ -416,6 +437,25 @@ const Students = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
+                            {/* Profile Picture */}
+                            <div className="flex justify-center">
+                                {selectedStudent.profile_picture_url ? (
+                                    <img
+                                        src={`${API_BASE_URL}${selectedStudent.profile_picture_url}`}
+                                        alt={selectedStudent.name}
+                                        className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                <div className={`w-24 h-24 rounded-full bg-gray-100 items-center justify-center ${selectedStudent.profile_picture_url ? 'hidden' : 'flex'}`}>
+                                    <UserCircleIcon className="w-20 h-20 text-gray-400" />
+                                </div>
+                            </div>
+
                             <div>
                                 <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Region</p>
                                 <p className="text-gray-900 font-bold text-base mt-1">{selectedStudent.region || ''}</p>

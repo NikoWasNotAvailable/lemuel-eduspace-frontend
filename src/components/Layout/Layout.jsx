@@ -13,7 +13,10 @@ import {
     Bars3Icon,
     XMarkIcon,
     CalendarIcon,
+    UserCircleIcon,
 } from '@heroicons/react/24/outline';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout, hasAnyRole } = useAuth();
@@ -74,8 +77,20 @@ const Sidebar = ({ isOpen, onClose }) => {
                         {/* User Profile Section */}
                         <Link to="/profile" className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6] hover:bg-[#6366f1] transition-colors duration-200" onClick={onClose}>
                             <div className="shrink-0">
-                                <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center">
-                                    <span className="text-lg font-medium">
+                                <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center overflow-hidden">
+                                    {user?.profile_picture_url ? (
+                                        <img
+                                            src={`${API_BASE_URL}${user.profile_picture_url}`}
+                                            alt={user?.name}
+                                            className="h-12 w-12 rounded-full object-cover"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <span className={`text-lg font-medium ${user?.profile_picture_url ? 'hidden' : ''}`}>
                                         {user?.name?.[0] || user?.first_name?.[0] || 'U'}
                                     </span>
                                 </div>
@@ -131,8 +146,20 @@ const Sidebar = ({ isOpen, onClose }) => {
                     {/* User Profile Section */}
                     <Link to="/profile" className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6] hover:bg-[#6366f1] transition-colors duration-200">
                         <div className="shrink-0">
-                            <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center">
-                                <span className="text-lg font-medium">
+                            <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center overflow-hidden">
+                                {user?.profile_picture_url ? (
+                                    <img
+                                        src={`${API_BASE_URL}${user.profile_picture_url}`}
+                                        alt={user?.name}
+                                        className="h-12 w-12 rounded-full object-cover"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                <span className={`text-lg font-medium ${user?.profile_picture_url ? 'hidden' : ''}`}>
                                     {user?.name?.[0] || user?.first_name?.[0] || 'U'}
                                 </span>
                             </div>
