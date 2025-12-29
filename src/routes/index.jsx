@@ -25,6 +25,7 @@ import Notifications from '../pages/Notifications';
 import Calendar from '../pages/Calendar';
 import Banners from '../pages/Banners';
 import TeacherClasses from '../pages/TeacherClasses';
+import Profile from '../pages/Profile';
 
 const AppRoutes = () => {
     return (
@@ -43,6 +44,15 @@ const AppRoutes = () => {
                 element={
                     <ProtectedRoute requiredRoles={['teacher', 'student', 'parent', 'student_parent']}>
                         <Dashboard />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <Profile />
                     </ProtectedRoute>
                 }
             />

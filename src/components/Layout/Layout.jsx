@@ -72,7 +72,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </div>
 
                         {/* User Profile Section */}
-                        <div className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6]">
+                        <Link to="/profile" className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6] hover:bg-[#6366f1] transition-colors duration-200" onClick={onClose}>
                             <div className="shrink-0">
                                 <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center">
                                     <span className="text-lg font-medium">
@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 </p>
                                 <p className="text-xs uppercase">{user?.role || 'User'}</p>
                             </div>
-                        </div>
+                        </Link>
 
                         <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                             <nav className="mt-2 px-2 space-y-1">
@@ -129,7 +129,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             <div className="hidden md:flex md:w-64 md:flex-col bg-[#2D336B]">
                 <div className="flex-1 flex flex-col min-h-0 bg-[#2D336B]">
                     {/* User Profile Section */}
-                    <div className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6]">
+                    <Link to="/profile" className="flex items-center p-4 text-black bg-[#7886C7] border-b border-[#5b21b6] hover:bg-[#6366f1] transition-colors duration-200">
                         <div className="shrink-0">
                             <div className="h-12 w-12 rounded-full bg-[#6366f1] flex items-center justify-center">
                                 <span className="text-lg font-medium">
@@ -143,7 +143,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                             </p>
                             <p className="text-xs uppercase">{user?.role || 'User'}</p>
                         </div>
-                    </div>
+                    </Link>
 
                     <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                         <nav className="mt-2 flex-1 px-2 space-y-1">

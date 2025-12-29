@@ -85,7 +85,7 @@ const PromotionHistoryModal = ({ isOpen, onClose, onSuccess }) => {
                                             {new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString()}
                                         </p>
                                         <p className="text-sm text-gray-600">
-                                            Promoted: <span className="font-medium text-green-600">{item.promoted_count}</span>, 
+                                            Promoted: <span className="font-medium text-green-600">{item.promoted_count}</span>,
                                             Graduated: <span className="font-medium text-blue-600">{item.graduated_count}</span>
                                         </p>
                                         <p className="text-xs text-gray-500 mt-1">By: {item.created_by_name || 'Unknown'}</p>

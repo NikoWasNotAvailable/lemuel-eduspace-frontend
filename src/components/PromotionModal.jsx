@@ -14,7 +14,7 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
         setError(null);
         try {
             const response = await promotionService.previewPromotion();
-            
+
             // Transform API response to component state structure
             const mapStudent = (s) => ({
                 id: s.student_id,
@@ -76,11 +76,11 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
             // If the API expects just exclusions, we can send that.
             // Or if it expects the list of IDs to process.
             // I'll assume we send the list of IDs to be promoted/graduated.
-            
+
             const studentsToPromote = previewData?.promoted
                 ?.filter(s => !excludedStudentIds.has(s.id))
                 .map(s => s.id) || [];
-            
+
             const studentsToGraduate = previewData?.graduated
                 ?.filter(s => !excludedStudentIds.has(s.id))
                 .map(s => s.id) || [];
@@ -135,7 +135,7 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                 <div className="flex-1 overflow-y-auto p-6">
                     {error && (
                         <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start">
-                            <ExclamationTriangleIcon className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                            <ExclamationTriangleIcon className="h-5 w-5 mr-2 mt-0.5 shrink-0" />
                             <p>{error}</p>
                         </div>
                     )}
@@ -147,7 +147,7 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                             </div>
                             <h3 className="text-lg font-bold text-gray-900 mb-2">Warning: Irreversible Action</h3>
                             <p className="text-gray-600 max-w-lg mx-auto mb-8">
-                                This action will promote all eligible students to the next grade level and graduate students in the final grade. 
+                                This action will promote all eligible students to the next grade level and graduate students in the final grade.
                                 Please review the changes carefully in the next step before confirming.
                             </p>
                             <button
@@ -198,8 +198,8 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                                                     {previewData.promoted.map(student => (
                                                         <tr key={student.id} className={excludedStudentIds.has(student.id) ? 'bg-gray-100 opacity-50' : 'bg-white'}>
                                                             <td className="px-4 py-2">
-                                                                <input 
-                                                                    type="checkbox" 
+                                                                <input
+                                                                    type="checkbox"
                                                                     checked={excludedStudentIds.has(student.id)}
                                                                     onChange={() => toggleExclusion(student.id)}
                                                                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -234,8 +234,8 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                                                     {previewData.graduated.map(student => (
                                                         <tr key={student.id} className={excludedStudentIds.has(student.id) ? 'bg-gray-100 opacity-50' : 'bg-white'}>
                                                             <td className="px-4 py-2">
-                                                                <input 
-                                                                    type="checkbox" 
+                                                                <input
+                                                                    type="checkbox"
                                                                     checked={excludedStudentIds.has(student.id)}
                                                                     onChange={() => toggleExclusion(student.id)}
                                                                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
