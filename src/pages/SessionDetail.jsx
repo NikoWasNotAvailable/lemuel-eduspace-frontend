@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { sessionService, sessionAttachmentService, subjectService, assignmentService, teacherSubjectService, studentService } from '../services';
+import { sessionService, sessionAttachmentService, subjectService, assignmentService, teacherSubjectService, studentService, notificationService } from '../services';
 import Layout from '../components/Layout/Layout';
 import AddAttachmentModal from '../components/AddAttachmentModal';
 import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
@@ -16,7 +16,8 @@ import {
     PlusIcon,
     TrashIcon,
     CheckCircleIcon,
-    UserIcon
+    UserIcon,
+    BellIcon
 } from '@heroicons/react/24/outline';
 
 const SessionDetail = () => {
@@ -194,6 +195,29 @@ const SessionDetail = () => {
         } catch (err) {
             console.error('Download failed:', err);
             alert('Failed to download file');
+        }
+    };
+
+    const handleNotifyStudent = async (student) => {
+        if (!window.confirm(`Send notification to ${student.name}?`)) return;
+
+        try {
+            // 1. Create notification
+            const formData = new FormData();
+            formData.append('title', `Missing Submission: ${session?.name || 'Session'}`);
+            formData.append('description', `You have not submitted your assignment for ${session?.name} in ${subjectInfo?.name}. Please submit it as soon as possible.`);
+            formData.append('type', 'assignment');
+            formData.append('is_scheduled', '0');
+            
+            const notification = await notificationService.createNotification(formData);
+
+            // 2. Assign to student
+            await notificationService.assignToUsers(notification.id, [student.id]);
+
+            alert(`Notification sent to ${student.name}`);
+        } catch (err) {
+            console.error('Failed to send notification:', err);
+            alert('Failed to send notification. Please try again.');
         }
     };
 
@@ -420,12 +444,21 @@ const SessionDetail = () => {
                             {students.filter(s => !allSubmissions.some(sub => sub.student_id === s.id)).length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {students.filter(s => !allSubmissions.some(sub => sub.student_id === s.id)).map((student) => (
-                                        <div key={student.id} className="bg-white p-3 rounded-lg border border-red-200 flex items-center">
-                                            <UserIcon className="h-5 w-5 text-gray-400 mr-3" />
-                                            <div>
-                                                <p className="font-medium text-gray-900">{student.name}</p>
-                                                <p className="text-xs text-gray-500">{student.nis || 'No NIS'}</p>
+                                        <div key={student.id} className="bg-white p-3 rounded-lg border border-red-200 flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <UserIcon className="h-5 w-5 text-gray-400 mr-3" />
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{student.name}</p>
+                                                    <p className="text-xs text-gray-500">{student.nis || 'No NIS'}</p>
+                                                </div>
                                             </div>
+                                            <button
+                                                onClick={() => handleNotifyStudent(student)}
+                                                className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                                                title="Notify Student"
+                                            >
+                                                <BellIcon className="h-5 w-5" />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>

@@ -433,9 +433,8 @@ const ClassSubjects = () => {
                                                     <td className="px-6 py-4 text-gray-700">{student.name}</td>
                                                     <td className="px-6 py-4 text-gray-700 capitalize">{student.gender}</td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                            student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                        }`}>
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                            }`}>
                                                             {student.status || 'active'}
                                                         </span>
                                                     </td>
