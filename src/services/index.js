@@ -13,6 +13,7 @@ import { enrollmentService } from './enrollmentService';
 import { teacherSubjectService } from './teacherSubjectService';
 import { regionService } from './regionService';
 import { bannerService } from './bannerService';
+import { promotionService } from './promotionService';
 
 // Re-export all services for convenient access
 export {
@@ -29,5 +30,6 @@ export {
     enrollmentService,
     teacherSubjectService,
     regionService,
-    bannerService
+    bannerService,
+    promotionService
 };

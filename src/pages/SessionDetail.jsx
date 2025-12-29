@@ -208,7 +208,7 @@ const SessionDetail = () => {
             formData.append('description', `You have not submitted your assignment for ${session?.name} in ${subjectInfo?.name}. Please submit it as soon as possible.`);
             formData.append('type', 'assignment');
             formData.append('is_scheduled', '0');
-            
+
             const notification = await notificationService.createNotification(formData);
 
             // 2. Assign to student

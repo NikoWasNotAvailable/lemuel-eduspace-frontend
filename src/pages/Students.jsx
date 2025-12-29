@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import AddStudentModal from '../components/AddStudentModal';
 import EditStudentModal from '../components/EditStudentModal';
+import PromotionModal from '../components/PromotionModal';
+import PromotionHistoryModal from '../components/PromotionHistoryModal';
 import { userService, studentService } from '../services';
 import {
     ArrowLeftIcon,
@@ -10,7 +12,8 @@ import {
     PlusIcon,
     PencilIcon,
     TrashIcon,
-    XMarkIcon
+    XMarkIcon,
+    ClockIcon
 } from '@heroicons/react/24/outline';
 
 const Students = () => {
@@ -20,6 +23,8 @@ const Students = () => {
     const [error, setError] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [addingStudent, setAddingStudent] = useState(false);
     const [editingStudent, setEditingStudent] = useState(false);
 
@@ -234,12 +239,27 @@ const Students = () => {
                                 </select>
                             </div>
 
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
-                            >
-                                ADD
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsHistoryModalOpen(true)}
+                                    className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition"
+                                    title="Promotion History"
+                                >
+                                    <ClockIcon className="h-5 w-5" />
+                                </button>
+                                <button
+                                    onClick={() => setIsPromotionModalOpen(true)}
+                                    className="bg-blue-600 text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-blue-700 transition"
+                                >
+                                    Mass Promotion
+                                </button>
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="bg-[#6B7280] text-white text-sm font-medium px-6 py-2.5 rounded-md hover:bg-[#5B6170] transition"
+                                >
+                                    ADD
+                                </button>
+                            </div>
                         </div>
 
                         {/* Error message */}
@@ -480,6 +500,24 @@ const Students = () => {
                 onSubmit={handleEditStudent}
                 loading={editingStudent}
                 student={selectedStudent}
+            />
+
+            {/* Promotion Modal */}
+            <PromotionModal
+                isOpen={isPromotionModalOpen}
+                onClose={() => setIsPromotionModalOpen(false)}
+                onSuccess={() => {
+                    fetchStudents();
+                }}
+            />
+
+            {/* Promotion History Modal */}
+            <PromotionHistoryModal
+                isOpen={isHistoryModalOpen}
+                onClose={() => setIsHistoryModalOpen(false)}
+                onSuccess={() => {
+                    fetchStudents();
+                }}
             />
         </Layout>
     );
