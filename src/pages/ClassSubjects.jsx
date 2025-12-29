@@ -422,22 +422,13 @@ const ClassSubjects = () => {
                                             <tr>
                                                 <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">NIS</th>
                                                 <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">Name</th>
-                                                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">Gender</th>
-                                                <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {students.map((student) => (
                                                 <tr key={student.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 text-gray-900 font-medium">{student.nis || '-'}</td>
-                                                    <td className="px-6 py-4 text-gray-700">{student.name}</td>
-                                                    <td className="px-6 py-4 text-gray-700 capitalize">{student.gender}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {student.status || 'active'}
-                                                        </span>
-                                                    </td>
+                                                    <td className="px-6 py-4 text-left text-gray-900 font-medium">{student.nis || '-'}</td>
+                                                    <td className="px-6 py-4 text-left text-gray-700">{student.name}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
