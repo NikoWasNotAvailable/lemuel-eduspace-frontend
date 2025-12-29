@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { regionService } from '../services';
+import React, { useState, useEffect, useRef } from 'react';
+import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { regionService, userService } from '../services';
 
 const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -19,6 +19,9 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [errors, setErrors] = useState({});
     const [regions, setRegions] = useState([]);
     const [loadingRegions, setLoadingRegions] = useState(false);
+    const [profilePictureFile, setProfilePictureFile] = useState(null);
+    const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+    const fileInputRef = useRef(null);
 
     // Load regions when modal opens
     useEffect(() => {
@@ -79,6 +82,36 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
         return Object.keys(newErrors).length === 0;
     };
 
+    const handleProfilePictureChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setErrors(prev => ({ ...prev, profile_picture: 'Please select an image file' }));
+                return;
+            }
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setErrors(prev => ({ ...prev, profile_picture: 'Image size must be less than 5MB' }));
+                return;
+            }
+            setProfilePictureFile(file);
+            setProfilePicturePreview(URL.createObjectURL(file));
+            setErrors(prev => ({ ...prev, profile_picture: '' }));
+        }
+    };
+
+    const removeProfilePicture = () => {
+        setProfilePictureFile(null);
+        if (profilePicturePreview) {
+            URL.revokeObjectURL(profilePicturePreview);
+        }
+        setProfilePicturePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -87,7 +120,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
         }
 
         try {
-            await onSubmit(formData);
+            await onSubmit(formData, profilePictureFile);
             // Reset form on successful submission
             setFormData({
                 name: '',
@@ -102,6 +135,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 status: 'active'
             });
             setErrors({});
+            removeProfilePicture();
             onClose();
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -123,6 +157,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
             status: 'active'
         });
         setErrors({});
+        removeProfilePicture();
         onClose();
     };
 
@@ -323,6 +358,56 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 <option value="active" className="text-gray-900">Active</option>
                                 <option value="inactive" className="text-gray-900">Inactive</option>
                             </select>
+                        </div>
+
+                        {/* Profile Picture */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Profile Picture
+                            </label>
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                    {profilePicturePreview ? (
+                                        <div className="relative">
+                                            <img
+                                                src={profilePicturePreview}
+                                                alt="Profile preview"
+                                                className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={removeProfilePicture}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                            >
+                                                <XMarkIcon className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                                            <PhotoIcon className="h-8 w-8 text-gray-400" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleProfilePictureChange}
+                                        accept="image/*"
+                                        className="hidden"
+                                        id="teacher-profile-picture-input"
+                                    />
+                                    <label
+                                        htmlFor="teacher-profile-picture-input"
+                                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                                    >
+                                        <PhotoIcon className="h-5 w-5 mr-2 text-gray-400" />
+                                        {profilePictureFile ? 'Change Photo' : 'Upload Photo'}
+                                    </label>
+                                    <p className="mt-2 text-xs text-gray-500">JPG, PNG or GIF. Max 5MB.</p>
+                                    {errors.profile_picture && <p className="text-red-500 text-xs mt-1">{errors.profile_picture}</p>}
+                                </div>
+                            </div>
                         </div>
                     </div>
 

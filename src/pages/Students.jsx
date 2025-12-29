@@ -127,10 +127,21 @@ const Students = () => {
         }
     };
 
-    const handleAddStudent = async (studentData) => {
+    const handleAddStudent = async (studentData, profilePictureFile) => {
         try {
             setAddingStudent(true);
-            await studentService.registerStudent(studentData);
+            const newStudent = await studentService.registerStudent(studentData);
+
+            // Upload profile picture if provided
+            if (profilePictureFile && newStudent?.id) {
+                try {
+                    await userService.uploadProfilePicture(profilePictureFile, newStudent.id);
+                } catch (picErr) {
+                    console.error('Error uploading profile picture:', picErr);
+                    // Don't fail the whole operation if picture upload fails
+                }
+            }
+
             await fetchStudents(); // Refresh the list
             setIsAddModalOpen(false);
             setError(null);
@@ -142,10 +153,21 @@ const Students = () => {
         }
     };
 
-    const handleEditStudent = async (studentData) => {
+    const handleEditStudent = async (studentData, profilePictureFile) => {
         try {
             setEditingStudent(true);
             await studentService.updateStudent(selectedStudent.id, studentData);
+
+            // Upload profile picture if provided
+            if (profilePictureFile) {
+                try {
+                    await userService.uploadProfilePicture(profilePictureFile, selectedStudent.id);
+                } catch (picErr) {
+                    console.error('Error uploading profile picture:', picErr);
+                    // Don't fail the whole operation if picture upload fails
+                }
+            }
+
             await fetchStudents(); // Refresh the list
             setIsEditModalOpen(false);
             setSelectedStudent(null);

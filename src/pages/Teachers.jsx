@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import AddTeacherModal from '../components/AddTeacherModal';
 import EditTeacherModal from '../components/EditTeacherModal';
-import { teacherService } from '../services';
+import { teacherService, userService } from '../services';
 import {
     ArrowLeftIcon,
     MagnifyingGlassIcon,
@@ -100,10 +100,21 @@ const Teachers = () => {
         }
     };
 
-    const handleAddTeacher = async (teacherData) => {
+    const handleAddTeacher = async (teacherData, profilePictureFile) => {
         try {
             setAddingTeacher(true);
-            await teacherService.registerTeacher(teacherData);
+            const newTeacher = await teacherService.registerTeacher(teacherData);
+
+            // Upload profile picture if provided
+            if (profilePictureFile && newTeacher?.id) {
+                try {
+                    await userService.uploadProfilePicture(profilePictureFile, newTeacher.id);
+                } catch (picErr) {
+                    console.error('Error uploading profile picture:', picErr);
+                    // Don't fail the whole operation if picture upload fails
+                }
+            }
+
             await fetchTeachers(); // Refresh the list
             setIsAddModalOpen(false);
             setError(null);
@@ -115,10 +126,21 @@ const Teachers = () => {
         }
     };
 
-    const handleEditTeacher = async (teacherData) => {
+    const handleEditTeacher = async (teacherData, profilePictureFile) => {
         try {
             setEditingTeacher(true);
             await teacherService.updateTeacher(selectedTeacher.id, teacherData);
+
+            // Upload profile picture if provided
+            if (profilePictureFile) {
+                try {
+                    await userService.uploadProfilePicture(profilePictureFile, selectedTeacher.id);
+                } catch (picErr) {
+                    console.error('Error uploading profile picture:', picErr);
+                    // Don't fail the whole operation if picture upload fails
+                }
+            }
+
             await fetchTeachers(); // Refresh the list
             setIsEditModalOpen(false);
             setSelectedTeacher(null);
