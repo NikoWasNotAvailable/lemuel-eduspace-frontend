@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import LoginLeftPanel from '../components/UI/LoginLeftPanel';
 
@@ -42,7 +43,10 @@ const LoginAdmin = () => {
                 <LoginLeftPanel />
 
                 {/* Right Side */}
-                <div className="w-1/2 flex flex-col justify-center px-10 py-8 bg-white">
+                <div className="w-1/2 flex flex-col justify-center px-10 py-8 bg-white relative">
+                    <Link to="/login" className="absolute top-6 left-6 text-gray-400 hover:text-[#DC2626] transition-colors">
+                        <ArrowLeftIcon className="h-6 w-6" />
+                    </Link>
                     <h2 className="text-xl font-semibold text-gray-800 mb-1">Login Administrator</h2>
                     <p className="text-sm text-gray-500 mb-6">Email and Administrator Name</p>
 
