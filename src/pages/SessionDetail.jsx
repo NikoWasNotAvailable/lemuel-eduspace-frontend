@@ -302,19 +302,23 @@ const SessionDetail = () => {
                     </h2>
                 </div>
 
-                {/* Student Assignment Submission Section */}
+                {/* Student/Parent Assignment Submission Section */}
                 {user?.role === 'student' && (
                     <div className="max-w-4xl mx-auto mb-8">
-                        <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6">
+                        <div className={`${user?.parent_access ? 'bg-purple-50 border-purple-200' : 'bg-green-50 border-green-200'} border-2 rounded-xl p-6`}>
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900">Your Assignment Submissions</h3>
-                                <button
-                                    onClick={() => setIsSubmitAssignmentModalOpen(true)}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors"
-                                >
-                                    <ArrowUpTrayIcon className="h-5 w-5" />
-                                    <span>Upload Assignment</span>
-                                </button>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    {user?.parent_access ? "Your Child's Assignment Submissions" : 'Your Assignment Submissions'}
+                                </h3>
+                                {!user?.parent_access && (
+                                    <button
+                                        onClick={() => setIsSubmitAssignmentModalOpen(true)}
+                                        className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors"
+                                    >
+                                        <ArrowUpTrayIcon className="h-5 w-5" />
+                                        <span>Upload Assignment</span>
+                                    </button>
+                                )}
                             </div>
                             {mySubmissions.length > 0 ? (
                                 <div className="space-y-3">
@@ -338,14 +342,16 @@ const SessionDetail = () => {
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col items-end space-y-2 ml-4">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${submission.grade !== null ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${submission.grade !== null
+                                                        ? (user?.parent_access ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800')
+                                                        : 'bg-yellow-100 text-yellow-800'
                                                         }`}>
                                                         {submission.grade !== null ? 'Graded' : 'Pending'}
                                                     </span>
                                                     <button
                                                         onClick={() => handleDownloadSubmission(submission)}
-                                                        className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 hover:bg-green-700 transition-colors"
-                                                        title="Download your submission"
+                                                        className={`${user?.parent_access ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'} text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 transition-colors`}
+                                                        title={user?.parent_access ? "Download child's submission" : "Download your submission"}
                                                     >
                                                         <ArrowDownTrayIcon className="h-4 w-4" />
                                                         <span>Download</span>
@@ -356,7 +362,11 @@ const SessionDetail = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-600 text-center py-4">No submissions yet. Upload your assignment above.</p>
+                                <p className="text-gray-600 text-center py-4">
+                                    {user?.parent_access
+                                        ? 'Your child has not submitted any assignments for this session yet.'
+                                        : 'No submissions yet. Upload your assignment above.'}
+                                </p>
                             )}
                         </div>
                     </div>
