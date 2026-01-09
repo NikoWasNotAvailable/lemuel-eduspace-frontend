@@ -1,10 +1,8 @@
-// User roles
+// User roles (parent access is handled via parent_access flag on student accounts)
 export const USER_ROLES = {
     ADMIN: 'admin',
     TEACHER: 'teacher',
     STUDENT: 'student',
-    PARENT: 'parent',
-    STUDENT_PARENT: 'student_parent',
 };
 
 // Grade levels
@@ -18,8 +16,6 @@ export const ROLE_LABELS = {
     [USER_ROLES.ADMIN]: 'Administrator',
     [USER_ROLES.TEACHER]: 'Teacher',
     [USER_ROLES.STUDENT]: 'Student',
-    [USER_ROLES.PARENT]: 'Parent',
-    [USER_ROLES.STUDENT_PARENT]: 'Student & Parent',
 };
 
 // Date formatting utilities

@@ -42,7 +42,7 @@ const AppRoutes = () => {
             <Route
                 path="/dashboard"
                 element={
-                    <ProtectedRoute requiredRoles={['teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['teacher', 'student']}>
                         <Dashboard />
                     </ProtectedRoute>
                 }
@@ -89,7 +89,7 @@ const AppRoutes = () => {
             <Route
                 path="/notifications"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <Notifications />
                     </ProtectedRoute>
                 }
@@ -98,7 +98,7 @@ const AppRoutes = () => {
             <Route
                 path="/calendar"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <Calendar />
                     </ProtectedRoute>
                 }
@@ -117,7 +117,7 @@ const AppRoutes = () => {
             <Route
                 path="/classes"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <RegionsList />
                     </ProtectedRoute>
                 }
@@ -126,7 +126,7 @@ const AppRoutes = () => {
             <Route
                 path="/classes/:regionId"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <RegionGrades />
                     </ProtectedRoute>
                 }
@@ -135,7 +135,7 @@ const AppRoutes = () => {
             <Route
                 path="/classes/:regionId/grade/:category"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <GradeClasses />
                     </ProtectedRoute>
                 }
@@ -144,7 +144,7 @@ const AppRoutes = () => {
             <Route
                 path="/classes/:regionId/class/:classId"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <ClassSubjects />
                     </ProtectedRoute>
                 }
@@ -153,7 +153,7 @@ const AppRoutes = () => {
             <Route
                 path="/subjects/:subjectId/sessions"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <SubjectSessions />
                     </ProtectedRoute>
                 }
@@ -162,7 +162,7 @@ const AppRoutes = () => {
             <Route
                 path="/subjects/:subjectId/sessions/:sessionId"
                 element={
-                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student', 'parent', 'student_parent']}>
+                    <ProtectedRoute requiredRoles={['admin', 'teacher', 'student']}>
                         <SessionDetail />
                     </ProtectedRoute>
                 }

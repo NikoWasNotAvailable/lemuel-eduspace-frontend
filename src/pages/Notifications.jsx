@@ -164,7 +164,7 @@ const Notifications = () => {
                 switch (submitData.assignmentType) {
                     case 'all':
                         // Assign to all users by role (all roles)
-                        await notificationService.assignByRole(notificationId, ['admin', 'teacher', 'student', 'parent', 'student_parent']);
+                        await notificationService.assignByRole(notificationId, ['admin', 'teacher', 'student']);
                         break;
                     case 'region':
                         await notificationService.assignByRegion(notificationId, submitData.regionId);
@@ -294,7 +294,7 @@ const Notifications = () => {
                                     <option value="announcement">Announcement</option>
                                     <option value="assignment">Assignment</option>
                                     <option value="event">Event</option>
-                                    {(['admin', 'teacher', 'parent'].includes(user?.role) || user?.parent_access) && (
+                                    {(['admin', 'teacher'].includes(user?.role) || user?.parent_access) && (
                                         <option value="payment">Payment</option>
                                     )}
                                 </select>
@@ -455,7 +455,7 @@ const Notifications = () => {
                                                                                     title={recipient.is_read ? 'Read' : 'Unread'}
                                                                                 >
                                                                                     <UserIcon className="h-3 w-3" />
-                                                                                    <span>{recipient.user?.name || recipient.user?.email || `User #${recipient.user_id}`}</span>
+                                                                                    <span>{recipient.user_name || `User #${recipient.user_id}`}</span>
                                                                                     {recipient.is_read && (
                                                                                         <span className="text-green-300 text-[10px]">✓</span>
                                                                                     )}
