@@ -37,6 +37,7 @@ const Students = () => {
     const [selectedGrade, setSelectedGrade] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('');
     const [selectedEducationTier, setSelectedEducationTier] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -91,7 +92,9 @@ const Students = () => {
             selectedRegion === '' || student.region === selectedRegion;
         const matchesEducationTier =
             selectedEducationTier === '' || getEducationTier(student.grade) === selectedEducationTier;
-        return matchesSearch && matchesGender && matchesGrade && matchesRegion && matchesEducationTier;
+        const matchesStatus =
+            selectedStatus === '' || student.status === selectedStatus;
+        return matchesSearch && matchesGender && matchesGrade && matchesRegion && matchesEducationTier && matchesStatus;
     });
 
     // Pagination calculations
@@ -103,7 +106,7 @@ const Students = () => {
     // Reset to first page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, selectedGender, selectedGrade, selectedRegion, selectedEducationTier]);
+    }, [searchTerm, selectedGender, selectedGrade, selectedRegion, selectedEducationTier, selectedStatus]);
 
     const goToPage = (page) => {
         setCurrentPage(page);
@@ -262,6 +265,17 @@ const Students = () => {
                                     <option value="Elementary School">Elementary School</option>
                                     <option value="Junior High School">Junior High School</option>
                                 </select>
+
+                                <select
+                                    value={selectedStatus}
+                                    onChange={e => setSelectedStatus(e.target.value)}
+                                    className="border border-gray-300 rounded-md px-4 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white min-w-[120px]"
+                                >
+                                    <option value="">Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="graduated">Graduated</option>
+                                </select>
                             </div>
 
                             <div className="flex gap-3">
@@ -319,6 +333,7 @@ const Students = () => {
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">GRADE</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">REGION</th>
                                             <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">EDUCATION TIER</th>
+                                            <th className="text-left py-4 px-6 font-semibold text-gray-700 uppercase text-xs tracking-wider">STATUS</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
@@ -344,7 +359,7 @@ const Students = () => {
                                                             }}
                                                         />
                                                     ) : null}
-                                                    <UserCircleIcon 
+                                                    <UserCircleIcon
                                                         className={`w-10 h-10 text-gray-400 ${student.profile_picture_url ? 'hidden' : ''}`}
                                                     />
                                                 </td>
@@ -355,6 +370,18 @@ const Students = () => {
                                                 <td className="px-6 py-4 text-gray-700 font-medium">{student.grade || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">{student.region || ''}</td>
                                                 <td className="px-6 py-4 text-gray-700">{getEducationTier(student.grade)}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${student.status === 'active'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : student.status === 'suspended'
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : student.status === 'graduated'
+                                                                    ? 'bg-blue-100 text-blue-800'
+                                                                    : 'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {student.status || 'active'}
+                                                    </span>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>

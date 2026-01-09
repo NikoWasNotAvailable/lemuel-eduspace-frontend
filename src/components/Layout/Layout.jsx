@@ -8,7 +8,7 @@ import {
     ClipboardDocumentListIcon,
     BellIcon,
     UserIcon,
-    Cog6ToothIcon,
+    ClipboardDocumentCheckIcon,
     ArrowRightOnRectangleIcon,
     Bars3Icon,
     XMarkIcon,
@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Calendar', href: '/calendar', icon: CalendarIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Banner', href: '/banner', icon: HomeIcon, roles: ['admin'] },
         { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
-        // { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
+        { name: 'Admin Logs', href: '/admin-logs', icon: ClipboardDocumentCheckIcon, roles: ['admin'] },
     ];
 
     const filteredNavigation = navigation.filter(item =>

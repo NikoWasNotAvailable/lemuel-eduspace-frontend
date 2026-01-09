@@ -347,6 +347,7 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
                             >
                                 <option value="active" className="text-gray-900">Active</option>
                                 <option value="inactive" className="text-gray-900">Inactive</option>
+                                <option value="suspended" className="text-gray-900">Suspended</option>
                             </select>
                         </div>
 

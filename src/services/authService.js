@@ -63,5 +63,11 @@ export const authService = {
     logout: () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+    },
+
+    // Get admin login logs (admin only)
+    getAdminLoginLogs: async (params = {}) => {
+        const response = await api.get('/admin-auth/logs', { params });
+        return response.data;
     }
 };
