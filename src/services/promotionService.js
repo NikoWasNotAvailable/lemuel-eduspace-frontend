@@ -7,9 +7,9 @@ export const promotionService = {
         return response.data;
     },
 
-    // Confirm promotion
-    confirmPromotion: async (data) => {
-        const response = await api.post('/promotions/confirm', data);
+    // Confirm promotion (apply changes to database)
+    confirmPromotion: async (excludeStudentIds = []) => {
+        const response = await api.post('/promotions/confirm', { exclude_student_ids: excludeStudentIds });
         return response.data;
     },
 

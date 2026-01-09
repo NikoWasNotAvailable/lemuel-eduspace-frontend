@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import React, { useState, useMemo } from 'react';
+import { XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { promotionService } from '../services';
 
 const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
@@ -8,6 +8,40 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [excludedStudentIds, setExcludedStudentIds] = useState(new Set());
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Calculate active counts (excluding checked students)
+    const activeCounts = useMemo(() => {
+        if (!previewData) return { promoted: 0, graduated: 0 };
+
+        const promotedCount = previewData.promoted?.filter(s => !excludedStudentIds.has(s.id)).length || 0;
+        const graduatedCount = previewData.graduated?.filter(s => !excludedStudentIds.has(s.id)).length || 0;
+
+        return { promoted: promotedCount, graduated: graduatedCount };
+    }, [previewData, excludedStudentIds]);
+
+    // Filter students by search term
+    const filteredPromoted = useMemo(() => {
+        if (!previewData?.promoted) return [];
+        if (!searchTerm) return previewData.promoted;
+        const term = searchTerm.toLowerCase();
+        return previewData.promoted.filter(s =>
+            s.name?.toLowerCase().includes(term) ||
+            s.current_grade?.toLowerCase().includes(term) ||
+            s.next_grade?.toLowerCase().includes(term) ||
+            s.next_class_name?.toLowerCase().includes(term)
+        );
+    }, [previewData, searchTerm]);
+
+    const filteredGraduated = useMemo(() => {
+        if (!previewData?.graduated) return [];
+        if (!searchTerm) return previewData.graduated;
+        const term = searchTerm.toLowerCase();
+        return previewData.graduated.filter(s =>
+            s.name?.toLowerCase().includes(term) ||
+            s.current_grade?.toLowerCase().includes(term)
+        );
+    }, [previewData, searchTerm]);
 
     const handlePreview = async () => {
         setLoading(true);
@@ -20,24 +54,24 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                 id: s.student_id,
                 name: s.student_name,
                 current_grade: s.old_grade,
+                current_class_name: s.old_class_name,
                 next_grade: s.new_grade,
                 next_class_name: s.new_class_name,
-                reason: s.status // Fallback for issues
+                status: s.status
             });
 
             const processedData = {
+                summary: response.summary,
                 promoted: response.details
                     .filter(d => d.status === 'promoted')
                     .map(mapStudent),
                 graduated: response.details
                     .filter(d => d.status === 'graduated')
-                    .map(mapStudent),
-                issues: response.details
-                    .filter(d => d.status !== 'promoted' && d.status !== 'graduated')
                     .map(mapStudent)
             };
 
             setPreviewData(processedData);
+            setSearchTerm('');
             setStep('preview');
         } catch (err) {
             console.error('Preview failed:', err);
@@ -71,24 +105,9 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
         setLoading(true);
         setError(null);
         try {
-            // Filter out excluded students from the preview data
-            // Assuming previewData has lists of students. 
-            // If the API expects just exclusions, we can send that.
-            // Or if it expects the list of IDs to process.
-            // I'll assume we send the list of IDs to be promoted/graduated.
-
-            const studentsToPromote = previewData?.promoted
-                ?.filter(s => !excludedStudentIds.has(s.id))
-                .map(s => s.id) || [];
-
-            const studentsToGraduate = previewData?.graduated
-                ?.filter(s => !excludedStudentIds.has(s.id))
-                .map(s => s.id) || [];
-
-            await promotionService.confirmPromotion({
-                promote_student_ids: studentsToPromote,
-                graduate_student_ids: studentsToGraduate
-            });
+            // Send the list of excluded student IDs to the backend
+            const excludedIds = Array.from(excludedStudentIds);
+            await promotionService.confirmPromotion(excludedIds);
 
             setStep('success');
             if (onSuccess) onSuccess();
@@ -114,6 +133,7 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
         setStep('warning');
         setPreviewData(null);
         setExcludedStudentIds(new Set());
+        setSearchTerm('');
         setError(null);
         onClose();
     };
@@ -161,31 +181,56 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                     )}
 
                     {step === 'preview' && previewData && (
-                        <div className="space-y-8">
-                            {/* Summary Stats */}
-                            <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-6">
+                            {/* Summary Stats - Dynamic based on exclusions */}
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-green-50 p-4 rounded-lg border border-green-100">
                                     <p className="text-sm text-green-600 font-medium">To Promote</p>
-                                    <p className="text-2xl font-bold text-green-800">{previewData.promoted?.length || 0}</p>
+                                    <p className="text-2xl font-bold text-green-800">
+                                        {activeCounts.promoted}
+                                        {excludedStudentIds.size > 0 && previewData.promoted?.some(s => excludedStudentIds.has(s.id)) && (
+                                            <span className="text-sm font-normal text-green-600 ml-2">
+                                                (of {previewData.promoted?.length || 0})
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                                     <p className="text-sm text-blue-600 font-medium">To Graduate</p>
-                                    <p className="text-2xl font-bold text-blue-800">{previewData.graduated?.length || 0}</p>
+                                    <p className="text-2xl font-bold text-blue-800">
+                                        {activeCounts.graduated}
+                                        {excludedStudentIds.size > 0 && previewData.graduated?.some(s => excludedStudentIds.has(s.id)) && (
+                                            <span className="text-sm font-normal text-blue-600 ml-2">
+                                                (of {previewData.graduated?.length || 0})
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
-                                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-                                    <p className="text-sm text-red-600 font-medium">Issues</p>
-                                    <p className="text-2xl font-bold text-red-800">{previewData.issues?.length || 0}</p>
-                                </div>
+                            </div>
+
+                            {/* Search Input */}
+                            <div className="relative">
+                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search students to exclude..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                />
                             </div>
 
                             {/* Lists */}
                             <div className="space-y-6">
-                                {previewData.promoted?.length > 0 && (
+                                {filteredPromoted.length > 0 && (
                                     <div>
-                                        <h4 className="font-semibold text-gray-800 mb-3">Promoting Students</h4>
+                                        <h4 className="font-semibold text-gray-800 mb-3">
+                                            Promoting Students
+                                            {searchTerm && <span className="font-normal text-gray-500 ml-2">({filteredPromoted.length} found)</span>}
+                                        </h4>
                                         <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden max-h-60 overflow-y-auto">
                                             <table className="min-w-full text-sm text-left">
-                                                <thead className="bg-gray-100 text-gray-600 font-medium border-b border-gray-200">
+                                                <thead className="bg-gray-100 text-gray-600 font-medium border-b border-gray-200 sticky top-0">
                                                     <tr>
                                                         <th className="px-4 py-2 w-10">Excl.</th>
                                                         <th className="px-4 py-2">Name</th>
@@ -195,7 +240,7 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-200">
-                                                    {previewData.promoted.map(student => (
+                                                    {filteredPromoted.map(student => (
                                                         <tr key={student.id} className={excludedStudentIds.has(student.id) ? 'bg-gray-100 opacity-50' : 'bg-white'}>
                                                             <td className="px-4 py-2">
                                                                 <input
@@ -217,12 +262,15 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                                     </div>
                                 )}
 
-                                {previewData.graduated?.length > 0 && (
+                                {filteredGraduated.length > 0 && (
                                     <div>
-                                        <h4 className="font-semibold text-gray-800 mb-3">Graduating Students</h4>
+                                        <h4 className="font-semibold text-gray-800 mb-3">
+                                            Graduating Students
+                                            {searchTerm && <span className="font-normal text-gray-500 ml-2">({filteredGraduated.length} found)</span>}
+                                        </h4>
                                         <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden max-h-60 overflow-y-auto">
                                             <table className="min-w-full text-sm text-left">
-                                                <thead className="bg-gray-100 text-gray-600 font-medium border-b border-gray-200">
+                                                <thead className="bg-gray-100 text-gray-600 font-medium border-b border-gray-200 sticky top-0">
                                                     <tr>
                                                         <th className="px-4 py-2 w-10">Excl.</th>
                                                         <th className="px-4 py-2">Name</th>
@@ -231,7 +279,7 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-200">
-                                                    {previewData.graduated.map(student => (
+                                                    {filteredGraduated.map(student => (
                                                         <tr key={student.id} className={excludedStudentIds.has(student.id) ? 'bg-gray-100 opacity-50' : 'bg-white'}>
                                                             <td className="px-4 py-2">
                                                                 <input
@@ -252,29 +300,9 @@ const PromotionModal = ({ isOpen, onClose, onSuccess }) => {
                                     </div>
                                 )}
 
-                                {previewData.issues?.length > 0 && (
-                                    <div>
-                                        <h4 className="font-semibold text-red-800 mb-3">Issues (Cannot Promote)</h4>
-                                        <div className="bg-red-50 rounded-lg border border-red-200 overflow-hidden max-h-60 overflow-y-auto">
-                                            <table className="min-w-full text-sm text-left">
-                                                <thead className="bg-red-100 text-red-800 font-medium border-b border-red-200">
-                                                    <tr>
-                                                        <th className="px-4 py-2">Name</th>
-                                                        <th className="px-4 py-2">Grade</th>
-                                                        <th className="px-4 py-2">Reason</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-red-100">
-                                                    {previewData.issues.map((issue, idx) => (
-                                                        <tr key={idx} className="bg-white">
-                                                            <td className="px-4 py-2 font-medium text-gray-900">{issue.student_name}</td>
-                                                            <td className="px-4 py-2 text-gray-600">{issue.current_grade}</td>
-                                                            <td className="px-4 py-2 text-red-600">{issue.reason}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                {searchTerm && filteredPromoted.length === 0 && filteredGraduated.length === 0 && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <p>No students found matching "{searchTerm}"</p>
                                     </div>
                                 )}
                             </div>
