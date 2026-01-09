@@ -36,7 +36,7 @@ const Dashboard = () => {
                     const response = await notificationService.getAllNotifications({ page_size: 100 });
                     data = response.notifications || [];
                 } else {
-                    const response = await notificationService.getMyNotifications({ page_size: 100 });
+                    const response = await notificationService.getMyNotifications({ page_size: 100 }, user?.parent_access || false);
                     data = Array.isArray(response) ? response.map(item => item.notification) : [];
                 }
 

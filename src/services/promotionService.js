@@ -19,9 +19,15 @@ export const promotionService = {
         return response.data;
     },
 
-    // Get promotion history (optional, but good for checking if undo is possible)
+    // Get promotion history list (summary only)
     getPromotionHistory: async () => {
         const response = await api.get('/promotions/history');
+        return response.data;
+    },
+
+    // Get promotion history detail by ID (includes full student details)
+    getPromotionHistoryDetail: async (historyId) => {
+        const response = await api.get(`/promotions/history/${historyId}`);
         return response.data;
     }
 };

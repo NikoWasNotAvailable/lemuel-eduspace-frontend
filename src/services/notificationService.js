@@ -136,8 +136,11 @@ export const notificationService = {
     // ============ User Notification Retrieval ============
 
     // Get current user's notifications
-    getMyNotifications: async (params = {}) => {
-        const response = await api.get('/user-notifications/my-notifications', { params });
+    // parentAccess: boolean - indicates if request is from parent viewing student's notifications
+    getMyNotifications: async (params = {}, parentAccess = false) => {
+        const response = await api.get('/user-notifications/my-notifications', { 
+            params: { ...params, parent_access: parentAccess } 
+        });
         return response.data;
     },
 

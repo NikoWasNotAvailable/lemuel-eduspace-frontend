@@ -77,7 +77,7 @@ const Notifications = () => {
                 fetchedNotifications = data.notifications || [];
                 fetchedTotalPages = data.total_pages || 1;
             } else {
-                const data = await notificationService.getMyNotifications(params);
+                const data = await notificationService.getMyNotifications(params, user?.parent_access || false);
                 // Normalize data structure for non-admins
                 fetchedNotifications = Array.isArray(data) ? data.map(item => ({
                     ...item.notification,
