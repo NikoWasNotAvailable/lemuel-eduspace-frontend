@@ -14,6 +14,7 @@ import { teacherSubjectService } from './teacherSubjectService';
 import { regionService } from './regionService';
 import { bannerService } from './bannerService';
 import { promotionService } from './promotionService';
+import { adminActivityLogService } from './adminActivityLogService';
 
 // Re-export all services for convenient access
 export {
@@ -31,5 +32,6 @@ export {
     teacherSubjectService,
     regionService,
     bannerService,
-    promotionService
+    promotionService,
+    adminActivityLogService
 };

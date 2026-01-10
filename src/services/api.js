@@ -9,13 +9,27 @@ const api = axios.create({
     },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and admin name
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Add admin name header for user modification operations
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                if (user.role === 'admin' && user.name) {
+                    config.headers['X-Admin-Name'] = user.name;
+                }
+            } catch (e) {
+                // Ignore JSON parse errors
+            }
+        }
+        
         return config;
     },
     (error) => {
