@@ -43,8 +43,11 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response?.status === 401) {
-            // Token expired or invalid
+        // Check if this is a login request - don't redirect on 401 for login attempts
+        const isLoginRequest = error.config?.url?.includes('/login');
+        
+        if (error.response?.status === 401 && !isLoginRequest) {
+            // Token expired or invalid (but not a failed login attempt)
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
