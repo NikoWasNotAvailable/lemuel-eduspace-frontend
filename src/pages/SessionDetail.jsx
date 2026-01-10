@@ -6,6 +6,7 @@ import AddAttachmentModal from '../components/AddAttachmentModal';
 import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
 import GradeAssignmentModal from '../components/GradeAssignmentModal';
 import { useAuth } from '../context/AuthContext';
+import { useAcademicYear } from '../context/AcademicYearContext';
 import {
     ArrowLeftIcon,
     DocumentIcon,
@@ -24,6 +25,7 @@ const SessionDetail = () => {
     const { sessionId, subjectId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { isHistoricalMode } = useAcademicYear();
 
     const [session, setSession] = useState(null);
     const [subjectInfo, setSubjectInfo] = useState(null);
@@ -240,7 +242,8 @@ const SessionDetail = () => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    const canManageAttachments = user?.role === 'admin' || user?.role === 'teacher';
+    // Disable write operations in historical mode
+    const canManageAttachments = (user?.role === 'admin' || user?.role === 'teacher') && !isHistoricalMode;
 
     if (loading) {
         return (
@@ -310,7 +313,7 @@ const SessionDetail = () => {
                                 <h3 className="text-lg font-semibold text-gray-900">
                                     {user?.parent_access ? "Your Child's Assignment Submissions" : 'Your Assignment Submissions'}
                                 </h3>
-                                {!user?.parent_access && (
+                                {!user?.parent_access && !isHistoricalMode && (
                                     <button
                                         onClick={() => setIsSubmitAssignmentModalOpen(true)}
                                         className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors"
@@ -318,6 +321,9 @@ const SessionDetail = () => {
                                         <ArrowUpTrayIcon className="h-5 w-5" />
                                         <span>Upload Assignment</span>
                                     </button>
+                                )}
+                                {isHistoricalMode && !user?.parent_access && (
+                                    <span className="text-amber-600 text-sm">Submissions disabled in historical view</span>
                                 )}
                             </div>
                             {mySubmissions.length > 0 ? (

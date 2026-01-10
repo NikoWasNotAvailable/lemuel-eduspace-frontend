@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../context/AuthContext";
+import { useAcademicYear } from "../context/AcademicYearContext";
 import { bannerService, notificationService } from "../services";
-import { ClockIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, ChevronLeftIcon, ChevronRightIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
 
 const Dashboard = () => {
     const { user } = useAuth();
+    const { activeGrade, activeClassName, activeClassId, activeRegionId, isHistoricalMode, selectedYear } = useAcademicYear();
     const [banners, setBanners] = useState([]);
     const [upcomingEvents, setUpcomingEvents] = useState([]);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -95,10 +97,38 @@ const Dashboard = () => {
     return (
         <Layout>
             <div className="px-0 py-10">
-                {/* Header */}
-                {/* <h1 className="text-2xl font-semibold text-gray-800 mb-8">
-                    Hi, {user?.role === "admin" ? "Admin" : user?.first_name || "User"}
-                </h1> */}
+                {/* Student/Teacher Info Card */}
+                {(user?.role === 'student' || user?.role === 'teacher') && (activeClassName || activeGrade) && (
+                    <div className={`mb-6 p-4 rounded-xl shadow-md ${isHistoricalMode ? 'bg-amber-50 border border-amber-200' : 'bg-white'}`}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${isHistoricalMode ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                                    <AcademicCapIcon className={`h-6 w-6 ${isHistoricalMode ? 'text-amber-600' : 'text-blue-600'}`} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">
+                                        {isHistoricalMode ? `Academic Year ${selectedYear?.name}` : 'Current Class'}
+                                    </p>
+                                    <p className="font-semibold text-gray-800">
+                                        {activeClassName || activeGrade || 'Not assigned'}
+                                    </p>
+                                </div>
+                            </div>
+                            {activeClassId && activeRegionId && (
+                                <Link 
+                                    to={`/classes/${activeRegionId}/class/${activeClassId}`}
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
+                                        isHistoricalMode 
+                                            ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' 
+                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    }`}
+                                >
+                                    View Subjects
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* LEFT SECTION - Upcoming Activities */}

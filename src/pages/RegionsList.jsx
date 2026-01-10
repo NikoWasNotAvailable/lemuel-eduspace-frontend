@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { regionService } from '../services';
 import { useAuth } from '../context/AuthContext';
+import { useAcademicYear } from '../context/AcademicYearContext';
 import Layout from '../components/Layout/Layout';
 import AddRegionModal from '../components/AddRegionModal';
 import EditRegionModal from '../components/EditRegionModal';
@@ -16,6 +17,7 @@ import {
 const RegionsList = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { activeClassId, activeRegionId } = useAcademicYear();
     const [regions, setRegions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -29,12 +31,16 @@ const RegionsList = () => {
 
     // Redirect students to their class page and teachers to their classes page
     useEffect(() => {
-        if (user?.role === 'student' && user?.class_id && user?.region_id) {
-            navigate(`/classes/${user.region_id}/class/${user.class_id}`, { replace: true });
+        if (user?.role === 'student') {
+            const classId = activeClassId || user?.class_id;
+            const regionId = activeRegionId || user?.region_id;
+            if (classId && regionId) {
+                navigate(`/classes/${regionId}/class/${classId}`, { replace: true });
+            }
         } else if (user?.role === 'teacher') {
             navigate('/teacher-classes', { replace: true });
         }
-    }, [user, navigate]);
+    }, [user, navigate, activeClassId, activeRegionId]);
 
     // Load regions on component mount
     useEffect(() => {

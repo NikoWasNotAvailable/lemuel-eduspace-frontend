@@ -15,6 +15,7 @@ import { regionService } from './regionService';
 import { bannerService } from './bannerService';
 import { promotionService } from './promotionService';
 import { adminActivityLogService } from './adminActivityLogService';
+import { academicYearService } from './academicYearService';
 
 // Re-export all services for convenient access
 export {
@@ -33,5 +34,6 @@ export {
     regionService,
     bannerService,
     promotionService,
-    adminActivityLogService
+    adminActivityLogService,
+    academicYearService
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { teacherSubjectService } from '../services';
 import { useAuth } from '../context/AuthContext';
+import { useAcademicYear } from '../context/AcademicYearContext';
 import Layout from '../components/Layout/Layout';
 import {
     AcademicCapIcon,
@@ -11,6 +12,7 @@ import {
 const TeacherClasses = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { activeClassId, activeRegionId } = useAcademicYear();
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,14 +20,18 @@ const TeacherClasses = () => {
     useEffect(() => {
         if (user?.role === 'teacher' && user?.id) {
             loadTeacherSubjects();
-        } else if (user?.role === 'student' && user?.class_id && user?.region_id) {
-            // Redirect students to their class page
-            navigate(`/classes/${user.region_id}/class/${user.class_id}`, { replace: true });
+        } else if (user?.role === 'student') {
+            // Redirect students to their class page (use historical class if viewing past year)
+            const classId = activeClassId || user?.class_id;
+            const regionId = activeRegionId || user?.region_id;
+            if (classId && regionId) {
+                navigate(`/classes/${regionId}/class/${classId}`, { replace: true });
+            }
         } else if (user?.role === 'admin') {
             // Redirect admin to regions list
             navigate('/classes', { replace: true });
         }
-    }, [user, navigate]);
+    }, [user, navigate, activeClassId, activeRegionId]);
 
     const loadTeacherSubjects = async () => {
         try {

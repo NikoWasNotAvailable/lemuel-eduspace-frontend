@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useAcademicYear } from '../../context/AcademicYearContext';
+import YearSelector from '../UI/YearSelector';
+import HistoricalModeBanner from '../UI/HistoricalModeBanner';
 import {
     HomeIcon,
     AcademicCapIcon,
@@ -20,12 +23,22 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout, hasAnyRole } = useAuth();
+    const { activeClassId, activeRegionId } = useAcademicYear();
     const location = useLocation();
 
     const getClassesHref = () => {
-        // Students go directly to their class page
-        if (user?.role === 'student' && user?.class_id && user?.region_id) {
-            return `/classes/${user.region_id}/class/${user.class_id}`;
+        // Students go directly to their class page (use activeClassId/activeRegionId for historical data)
+        if (user?.role === 'student') {
+            const classId = activeClassId || user?.class_id;
+            const regionId = activeRegionId || user?.region_id;
+            
+            if (classId && regionId) {
+                return `/classes/${regionId}/class/${classId}`;
+            }
+            // Fallback if no class assigned
+            if (regionId) {
+                return `/classes/${regionId}`;
+            }
         }
         // Teachers go to their classes/subjects page
         if (user?.role === 'teacher') {
@@ -43,6 +56,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: 'Calendar', href: '/calendar', icon: CalendarIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
         { name: 'Banner', href: '/banner', icon: HomeIcon, roles: ['admin'] },
         { name: 'Notifications', href: '/notifications', icon: BellIcon, roles: ['admin', 'teacher', 'student', 'parent', 'student_parent'] },
+        { name: 'Academic Years', href: '/academic-years', icon: CalendarIcon, roles: ['admin'] },
         { name: 'Admin Logs', href: '/admin-logs', icon: ClipboardDocumentCheckIcon, roles: ['admin'] },
     ];
 
@@ -227,7 +241,12 @@ const Layout = ({ children }) => {
                     </button>
                     <h1 className="text-xl font-bold text-black">LEMUEL<span className="text-[#5b21b6]">EduSpace</span></h1>
                 </div>
+                {/* Year Selector in Top Bar */}
+                <YearSelector />
             </div>
+
+            {/* Historical Mode Banner */}
+            <HistoricalModeBanner />
 
             {/* Main Content Area */}
             <div className="flex flex-1 overflow-hidden">

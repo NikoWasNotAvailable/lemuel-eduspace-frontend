@@ -27,6 +27,7 @@ import Banners from '../pages/Banners';
 import TeacherClasses from '../pages/TeacherClasses';
 import Profile from '../pages/Profile';
 import AdminLogs from '../pages/AdminLogs';
+import AcademicYears from '../pages/AcademicYears';
 
 const AppRoutes = () => {
     return (
@@ -91,6 +92,15 @@ const AppRoutes = () => {
                 element={
                     <ProtectedRoute requiredRoles={['admin']}>
                         <AdminLogs />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/academic-years"
+                element={
+                    <ProtectedRoute requiredRoles={['admin']}>
+                        <AcademicYears />
                     </ProtectedRoute>
                 }
             />
