@@ -190,7 +190,7 @@ const AcademicYears = () => {
                                 className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition disabled:opacity-50"
                             >
                                 <CameraIcon className="h-5 w-5" />
-                                {snapshotting ? 'Snapshotting...' : 'Snapshot Users'}
+                                {snapshotting ? 'Saving Current Users...' : 'Save Current Users'}
                             </button>
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
