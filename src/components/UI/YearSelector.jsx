@@ -15,8 +15,8 @@ const YearSelector = ({ className = '' }) => {
         isHistoricalMode
     } = useAcademicYear();
 
-    // Don't show for admin or if no years available
-    if (!user || user.role === 'admin' || allYears.length === 0) {
+    // Don't show for admin, teacher, or if no years available (only students and parents can change year)
+    if (!user || user.role === 'admin' || user.role === 'teacher' || allYears.length === 0) {
         return null;
     }
 

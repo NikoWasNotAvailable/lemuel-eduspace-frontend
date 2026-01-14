@@ -1,11 +1,14 @@
 import React from 'react';
 import { useAcademicYear } from '../../context/AcademicYearContext';
+import { useAuth } from '../../context/AuthContext';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 const HistoricalModeBanner = () => {
     const { isHistoricalMode, selectedYear, getSelectedYearHistory } = useAcademicYear();
+    const { user } = useAuth();
 
-    if (!isHistoricalMode) {
+    // Only show for students and parents, not for teachers
+    if (!isHistoricalMode || !user || user.role === 'teacher') {
         return null;
     }
 
