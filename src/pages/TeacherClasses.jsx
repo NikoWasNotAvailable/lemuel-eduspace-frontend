@@ -12,7 +12,7 @@ import {
 const TeacherClasses = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { activeClassId, activeRegionId } = useAcademicYear();
+    const { activeClassId, activeRegionId, isHistoricalMode } = useAcademicYear();
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -55,8 +55,20 @@ const TeacherClasses = () => {
         navigate(`/subjects/${subject.id}/sessions`);
     };
 
+    // Filter subjects to only show from active classes when viewing current year
+    // If class_is_active is not provided in the response, assume the class is active
+    const filteredSubjects = Array.isArray(subjects) 
+        ? (isHistoricalMode 
+            ? subjects 
+            : subjects.filter(subject => 
+                subject.class_is_active === undefined || 
+                subject.class_is_active === null || 
+                subject.class_is_active === 1 || 
+                subject.class_is_active === true))
+        : [];
+
     // Group subjects by class
-    const subjectsByClass = Array.isArray(subjects) ? subjects.reduce((acc, subject) => {
+    const subjectsByClass = filteredSubjects.reduce((acc, subject) => {
         const classId = subject.class_id;
         if (!acc[classId]) {
             acc[classId] = {
@@ -67,7 +79,7 @@ const TeacherClasses = () => {
         }
         acc[classId].subjects.push(subject);
         return acc;
-    }, {}) : {};
+    }, {});
 
     return (
         <Layout>
