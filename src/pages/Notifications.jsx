@@ -20,7 +20,8 @@ import {
     UsersIcon,
     ChevronDownIcon,
     ChevronUpIcon,
-    UserIcon
+    UserIcon,
+    ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
 
 const Notifications = () => {
@@ -150,18 +151,24 @@ const Notifications = () => {
         try {
             setAddingNotification(true);
 
-            // Create FormData
-            const formData = new FormData();
-            formData.append('title', submitData.notificationData.title);
-            if (submitData.notificationData.description) formData.append('description', submitData.notificationData.description);
-            formData.append('type', submitData.notificationData.type);
-            formData.append('is_scheduled', submitData.notificationData.is_scheduled);
-            if (submitData.notificationData.nominal) formData.append('nominal', submitData.notificationData.nominal);
-            if (submitData.notificationData.date) formData.append('date', submitData.notificationData.date);
-            if (submitData.notificationData.image) formData.append('image', submitData.notificationData.image);
+            // Create notification data object
+            const notificationData = {
+                title: submitData.notificationData.title,
+                description: submitData.notificationData.description || null,
+                type: submitData.notificationData.type,
+                is_scheduled: submitData.notificationData.is_scheduled === 1,
+                image: submitData.notificationData.image || null
+            };
+            
+            if (submitData.notificationData.nominal) {
+                notificationData.nominal = submitData.notificationData.nominal;
+            }
+            if (submitData.notificationData.date) {
+                notificationData.date = submitData.notificationData.date;
+            }
 
             // Create the notification first
-            const notification = await notificationService.createNotification(formData);
+            const notification = await notificationService.createNotification(notificationData);
 
             // Assign to users based on assignment type
             if (submitData.assignmentType !== 'none') {
@@ -381,7 +388,19 @@ const Notifications = () => {
                                     {filteredNotifications.map((notification) => (
                                         <div key={notification.id} className="flex items-start gap-4 group">
                                             {/* Card */}
-                                            <div className="flex-1 bg-[#7e89c9] rounded-xl p-4 text-white relative shadow-sm hover:shadow-md transition-shadow">
+                                            <div 
+                                                className={`flex-1 bg-[#7e89c9] rounded-xl p-4 text-white relative shadow-sm hover:shadow-md transition-shadow ${notification.link ? 'cursor-pointer' : ''}`}
+                                                onClick={() => {
+                                                    // Navigate to link if exists and not clicking on buttons
+                                                    if (notification.link) {
+                                                        // Mark as read for non-admin users
+                                                        if (user?.role !== 'admin' && !notification.is_read && notification.id) {
+                                                            notificationService.markNotificationsAsRead([notification.id]).catch(console.error);
+                                                        }
+                                                        navigate(notification.link);
+                                                    }
+                                                }}
+                                            >
                                                 {/* Title Row */}
                                                 <div className="mb-3 pr-8">
                                                     <h3 className="text-lg font-bold text-white truncate text-left">
@@ -392,7 +411,10 @@ const Notifications = () => {
                                                 {/* Edit Button (Inside) */}
                                                 {user?.role === 'admin' && (
                                                     <button 
-                                                        onClick={() => handleOpenEditModal(notification)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleOpenEditModal(notification);
+                                                        }}
                                                         className="text-white/70 hover:text-white transition-colors p-1 absolute top-4 right-4"
                                                         title="Edit notification"
                                                     >
@@ -443,12 +465,23 @@ const Notifications = () => {
                                                                     <span>{formatCurrency(notification.nominal)}</span>
                                                                 </div>
                                                             )}
+
+                                                            {/* Link indicator for clickable notifications */}
+                                                            {notification.link && (
+                                                                <div className="flex items-center gap-1 text-white">
+                                                                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                                                                    <span>Click to view</span>
+                                                                </div>
+                                                            )}
                                                         </div>
 
                                                         {/* Recipients Toggle */}
                                                         {user?.role === 'admin' && (
                                                             <button
-                                                                onClick={() => toggleRecipients(notification.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleRecipients(notification.id);
+                                                                }}
                                                                 className="flex items-center gap-2 text-xs text-white/80 hover:text-white mt-2 font-medium transition-colors"
                                                             >
                                                                 <UsersIcon className="h-3.5 w-3.5" />
@@ -506,7 +539,10 @@ const Notifications = () => {
                                             {/* Delete Button (Outside) */}
                                             {user?.role === 'admin' && (
                                                 <button
-                                                    onClick={() => handleDeleteNotification(notification.id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteNotification(notification.id);
+                                                    }}
                                                     className="mt-6 p-2 text-gray-400 hover:text-red-600 transition-colors"
                                                     title="Delete notification"
                                                 >

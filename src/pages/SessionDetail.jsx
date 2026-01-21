@@ -204,14 +204,16 @@ const SessionDetail = () => {
         if (!window.confirm(`Send notification to ${student.name}?`)) return;
 
         try {
-            // 1. Create notification
-            const formData = new FormData();
-            formData.append('title', `Missing Submission: ${session?.name || 'Session'}`);
-            formData.append('description', `You have not submitted your assignment for ${session?.name} in ${subjectInfo?.name}. Please submit it as soon as possible.`);
-            formData.append('type', 'assignment');
-            formData.append('is_scheduled', '0');
+            // 1. Create notification with link to this session
+            const notificationData = {
+                title: `Missing Submission: ${session?.name || 'Session'}`,
+                description: `You have not submitted your assignment for ${session?.name} in ${subjectInfo?.name}. Please submit it as soon as possible.`,
+                type: 'assignment',
+                is_scheduled: false,
+                link: `/subjects/${subjectId}/sessions/${sessionId}`
+            };
 
-            const notification = await notificationService.createNotification(formData);
+            const notification = await notificationService.createNotification(notificationData);
 
             // 2. Assign to student
             await notificationService.assignToUsers(notification.id, [student.id]);
