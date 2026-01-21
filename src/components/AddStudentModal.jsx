@@ -54,7 +54,8 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
             if (formData.region_id) {
                 setLoadingClasses(true);
                 try {
-                    const classesData = await classService.getClassesByRegion(formData.region_id);
+                    // Only show active classes for student assignment
+                    const classesData = await classService.getClassesByRegion(formData.region_id, 0, 100, true);
                     setClasses(classesData);
                 } catch (error) {
                     console.error('Failed to load classes:', error);

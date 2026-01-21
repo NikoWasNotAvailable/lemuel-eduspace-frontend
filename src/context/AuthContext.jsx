@@ -79,6 +79,15 @@ export const AuthProvider = ({ children }) => {
         if (token && userData) {
             try {
                 const user = JSON.parse(userData);
+                
+                // Check if user is inactive (students/teachers only, not admins)
+                if (user.role !== 'admin' && user.status === 'inactive') {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    dispatch({ type: 'INIT_COMPLETE' });
+                    return;
+                }
+                
                 dispatch({
                     type: 'LOGIN_SUCCESS',
                     payload: { user, token },
@@ -140,6 +149,15 @@ export const AuthProvider = ({ children }) => {
                 // If logged in via parent portal, set parent_access
                 if (userType === 'parent') {
                     user.parent_access = true;
+                }
+                
+                // Check if user is inactive - prevent login
+                if (user.status === 'inactive') {
+                    dispatch({
+                        type: 'LOGIN_FAILURE',
+                        payload: 'Your account is inactive. Please contact the administrator.',
+                    });
+                    return { success: false, error: 'Your account is inactive. Please contact the administrator.' };
                 }
             }
 

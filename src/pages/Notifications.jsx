@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout/Layout';
 import AddNotificationModal from '../components/AddNotificationModal';
+import EditNotificationModal from '../components/EditNotificationModal';
 import { notificationService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -30,6 +31,11 @@ const Notifications = () => {
     const [error, setError] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [addingNotification, setAddingNotification] = useState(false);
+    
+    // Edit state
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingNotification, setEditingNotification] = useState(null);
+    const [updatingNotification, setUpdatingNotification] = useState(false);
 
     // Recipients
     const [expandedNotifications, setExpandedNotifications] = useState({});
@@ -204,6 +210,27 @@ const Notifications = () => {
         }
     };
 
+    const handleOpenEditModal = (notification) => {
+        setEditingNotification(notification);
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditNotification = async (notificationId, updateData) => {
+        try {
+            setUpdatingNotification(true);
+            await notificationService.updateNotification(notificationId, updateData);
+            await fetchNotifications();
+            setIsEditModalOpen(false);
+            setEditingNotification(null);
+            setError(null);
+        } catch (err) {
+            console.error('Error updating notification:', err);
+            setError(err.response?.data?.detail || 'Failed to update notification');
+        } finally {
+            setUpdatingNotification(false);
+        }
+    };
+
     const getTypeIcon = (type) => {
         const className = "h-8 w-8 text-gray-900";
         switch (type) {
@@ -364,7 +391,11 @@ const Notifications = () => {
 
                                                 {/* Edit Button (Inside) */}
                                                 {user?.role === 'admin' && (
-                                                    <button className="text-white/70 hover:text-white transition-colors p-1 absolute top-4 right-4">
+                                                    <button 
+                                                        onClick={() => handleOpenEditModal(notification)}
+                                                        className="text-white/70 hover:text-white transition-colors p-1 absolute top-4 right-4"
+                                                        title="Edit notification"
+                                                    >
                                                         <PencilIcon className="h-5 w-5" />
                                                     </button>
                                                 )}
@@ -520,6 +551,18 @@ const Notifications = () => {
                 onClose={() => setIsAddModalOpen(false)}
                 onSubmit={handleAddNotification}
                 loading={addingNotification}
+            />
+
+            {/* Edit Notification Modal */}
+            <EditNotificationModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingNotification(null);
+                }}
+                onSubmit={handleEditNotification}
+                loading={updatingNotification}
+                notification={editingNotification}
             />
         </Layout>
     );

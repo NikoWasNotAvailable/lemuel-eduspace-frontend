@@ -8,29 +8,38 @@ export const classService = {
     },
 
     // Get all classes with pagination
-    getAllClasses: async (skip = 0, limit = 100) => {
+    getAllClasses: async (skip = 0, limit = 100, isActive = null) => {
         const params = new URLSearchParams();
         params.append('skip', skip);
         params.append('limit', limit);
+        if (isActive !== null) {
+            params.append('is_active', isActive);
+        }
 
         const response = await api.get(`/classes/?${params.toString()}`);
         return response.data;
     },
 
     // Search classes by name
-    searchClasses: async (searchTerm) => {
+    searchClasses: async (searchTerm, isActive = null) => {
         const params = new URLSearchParams();
         params.append('q', searchTerm);
+        if (isActive !== null) {
+            params.append('is_active', isActive);
+        }
 
         const response = await api.get(`/classes/search?${params.toString()}`);
         return response.data;
     },
 
     // Get classes by region
-    getClassesByRegion: async (regionId, skip = 0, limit = 100) => {
+    getClassesByRegion: async (regionId, skip = 0, limit = 100, isActive = null) => {
         const params = new URLSearchParams();
         params.append('skip', skip);
         params.append('limit', limit);
+        if (isActive !== null) {
+            params.append('is_active', isActive);
+        }
 
         const response = await api.get(`/classes/by-region/${regionId}?${params.toString()}`);
         return response.data;

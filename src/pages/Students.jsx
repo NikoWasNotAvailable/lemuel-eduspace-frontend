@@ -273,7 +273,7 @@ const Students = () => {
                                 >
                                     <option value="">Status</option>
                                     <option value="active">Active</option>
-                                    <option value="suspended">Suspended</option>
+                                    <option value="inactive">Inactive</option>
                                     <option value="graduated">Graduated</option>
                                 </select>
                             </div>
@@ -373,7 +373,7 @@ const Students = () => {
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${student.status === 'active'
                                                             ? 'bg-green-100 text-green-800'
-                                                            : student.status === 'suspended'
+                                                            : student.status === 'inactive'
                                                                 ? 'bg-red-100 text-red-800'
                                                                 : student.status === 'graduated'
                                                                     ? 'bg-blue-100 text-blue-800'

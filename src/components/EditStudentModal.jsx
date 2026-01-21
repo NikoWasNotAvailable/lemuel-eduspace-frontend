@@ -57,7 +57,8 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
             if (formData.region_id) {
                 setLoadingClasses(true);
                 try {
-                    const classesData = await classService.getClassesByRegion(formData.region_id);
+                    // Only show active classes for student assignment
+                    const classesData = await classService.getClassesByRegion(formData.region_id, 0, 100, true);
                     setClasses(classesData);
                 } catch (error) {
                     console.error('Failed to load classes:', error);
@@ -486,7 +487,6 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
                             >
                                 <option value="active" className="text-gray-900">Active</option>
                                 <option value="inactive" className="text-gray-900">Inactive</option>
-                                <option value="suspended" className="text-gray-900">Suspended</option>
                                 <option value="graduated" className="text-gray-900">Graduated</option>
                             </select>
                         </div>

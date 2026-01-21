@@ -18,7 +18,7 @@ const GradeClasses = () => {
     const { regionId, category } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { activeClassId, activeRegionId } = useAcademicYear();
+    const { activeClassId, activeRegionId, isHistoricalMode } = useAcademicYear();
 
     const ALL_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
 
@@ -52,17 +52,21 @@ const GradeClasses = () => {
         if (regionId) {
             loadRegionAndClasses();
         }
-    }, [regionId]);
+    }, [regionId, isHistoricalMode]);
 
     const loadRegionAndClasses = async () => {
         try {
             setLoading(true);
             setError(null);
 
+            // When viewing current year, only show active classes
+            // When viewing historical years, show all classes
+            const isActiveFilter = isHistoricalMode ? null : true;
+
             // Load region info and classes in parallel
             const [regionData, classesData] = await Promise.all([
                 regionService.getRegionById(regionId),
-                classService.getClassesByRegion(regionId)
+                classService.getClassesByRegion(regionId, 0, 100, isActiveFilter)
             ]);
 
             setRegionInfo(regionData);
@@ -81,7 +85,8 @@ const GradeClasses = () => {
             await classService.createClass(classData);
 
             // Refresh classes for the selected region
-            const updatedClasses = await classService.getClassesByRegion(regionId);
+            const isActiveFilter = isHistoricalMode ? null : true;
+            const updatedClasses = await classService.getClassesByRegion(regionId, 0, 100, isActiveFilter);
             setClasses(updatedClasses);
 
             setIsAddModalOpen(false);
@@ -106,7 +111,8 @@ const GradeClasses = () => {
             await classService.updateClass(editingClass.id, formData);
 
             // Refresh classes
-            const updatedClasses = await classService.getClassesByRegion(regionId);
+            const isActiveFilter = isHistoricalMode ? null : true;
+            const updatedClasses = await classService.getClassesByRegion(regionId, 0, 100, isActiveFilter);
             setClasses(updatedClasses);
 
             setIsEditModalOpen(false);
@@ -130,7 +136,8 @@ const GradeClasses = () => {
             await classService.deleteClass(classId);
 
             // Refresh classes
-            const updatedClasses = await classService.getClassesByRegion(regionId);
+            const isActiveFilter = isHistoricalMode ? null : true;
+            const updatedClasses = await classService.getClassesByRegion(regionId, 0, 100, isActiveFilter);
             setClasses(updatedClasses);
 
             setError(null);
