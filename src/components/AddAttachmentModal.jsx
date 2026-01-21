@@ -7,6 +7,8 @@ const ATTACHMENT_TYPES = [
     { value: 'other', label: 'Other' }
 ];
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) => {
     const [formData, setFormData] = useState({
         name: '',
@@ -14,7 +16,17 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
         file: null
     });
     const [dragActive, setDragActive] = useState(false);
+    const [fileError, setFileError] = useState('');
     const fileInputRef = useRef(null);
+
+    const validateFile = (file) => {
+        if (file.size > MAX_FILE_SIZE) {
+            setFileError('File size exceeds 10MB limit');
+            return false;
+        }
+        setFileError('');
+        return true;
+    };
 
     const handleDrag = (e) => {
         e.preventDefault();
@@ -33,22 +45,26 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
 
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             const file = e.dataTransfer.files[0];
-            setFormData(prev => ({
-                ...prev,
-                file,
-                name: prev.name || file.name.replace(/\.[^/.]+$/, '') // Use filename without extension as default name
-            }));
+            if (validateFile(file)) {
+                setFormData(prev => ({
+                    ...prev,
+                    file,
+                    name: prev.name || file.name.replace(/\.[^/.]+$/, '') // Use filename without extension as default name
+                }));
+            }
         }
     };
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setFormData(prev => ({
-                ...prev,
-                file,
-                name: prev.name || file.name.replace(/\.[^/.]+$/, '') // Use filename without extension as default name
-            }));
+            if (validateFile(file)) {
+                setFormData(prev => ({
+                    ...prev,
+                    file,
+                    name: prev.name || file.name.replace(/\.[^/.]+$/, '') // Use filename without extension as default name
+                }));
+            }
         }
     };
 
@@ -73,6 +89,7 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
 
     const handleClose = () => {
         setFormData({ name: '', type: 'material', file: null });
+        setFileError('');
         onClose();
     };
 
@@ -139,7 +156,7 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
                                     </p>
                                     <button
                                         type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, file: null }))}
+                                        onClick={() => { setFormData(prev => ({ ...prev, file: null })); setFileError(''); }}
                                         className="text-sm text-red-600 hover:text-red-700"
                                     >
                                         Remove file
@@ -159,9 +176,12 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
                                         </button>
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                        Supports PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, images, etc.
+                                        Supports PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, images, video files (max 10MB)
                                     </p>
                                 </div>
+                            )}
+                            {fileError && (
+                                <p className="mt-2 text-sm text-red-600">{fileError}</p>
                             )}
                         </div>
 

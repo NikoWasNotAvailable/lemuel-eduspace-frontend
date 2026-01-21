@@ -1,10 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { XMarkIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 const SubmitAssignmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) => {
     const [file, setFile] = useState(null);
     const [dragActive, setDragActive] = useState(false);
+    const [fileError, setFileError] = useState('');
     const fileInputRef = useRef(null);
+
+    const validateFile = (file) => {
+        if (file.size > MAX_FILE_SIZE) {
+            setFileError('File size exceeds 10MB limit');
+            return false;
+        }
+        setFileError('');
+        return true;
+    };
 
     const handleDrag = (e) => {
         e.preventDefault();
@@ -22,13 +34,19 @@ const SubmitAssignmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }
         setDragActive(false);
 
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setFile(e.dataTransfer.files[0]);
+            const selectedFile = e.dataTransfer.files[0];
+            if (validateFile(selectedFile)) {
+                setFile(selectedFile);
+            }
         }
     };
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+            const selectedFile = e.target.files[0];
+            if (validateFile(selectedFile)) {
+                setFile(selectedFile);
+            }
         }
     };
 
@@ -45,6 +63,7 @@ const SubmitAssignmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }
 
     const handleClose = () => {
         setFile(null);
+        setFileError('');
         onClose();
     };
 
@@ -111,7 +130,7 @@ const SubmitAssignmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }
                                     </p>
                                     <button
                                         type="button"
-                                        onClick={() => setFile(null)}
+                                        onClick={() => { setFile(null); setFileError(''); }}
                                         className="text-sm text-red-600 hover:text-red-700"
                                     >
                                         Remove file
@@ -131,9 +150,12 @@ const SubmitAssignmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }
                                         </button>
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                        Supports PDF, DOC, DOCX, images, ZIP files, etc.
+                                        Supports PDF, DOC, DOCX, images, ZIP files, etc. (max 10MB)
                                     </p>
                                 </div>
+                            )}
+                            {fileError && (
+                                <p className="mt-2 text-sm text-red-600">{fileError}</p>
                             )}
                         </div>
 

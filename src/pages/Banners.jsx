@@ -16,6 +16,9 @@ const Banners = () => {
         region_id: ''
     });
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [imageError, setImageError] = useState('');
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     useEffect(() => {
         fetchData();
@@ -96,11 +99,17 @@ const Banners = () => {
         setEditingBanner(null);
         setFormData({ image: null, description: '', region_id: '' });
         setPreviewUrl(null);
+        setImageError('');
     };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (file.size > MAX_FILE_SIZE) {
+                setImageError('Image size exceeds 10MB limit');
+                return;
+            }
+            setImageError('');
             setFormData({ ...formData, image: file });
             setPreviewUrl(URL.createObjectURL(file));
         }
@@ -168,7 +177,7 @@ const Banners = () => {
                                             <TrashIcon className="h-4 w-4 text-red-600" />
                                         </button>
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                                    <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-4">
                                         <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs rounded-md">
                                             {getRegionName(banner.region_id)}
                                         </span>
@@ -263,6 +272,9 @@ const Banners = () => {
                                                 )}
                                             </div>
                                         </div>
+                                        {imageError && (
+                                            <p className="text-red-500 text-xs mt-2">{imageError}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">

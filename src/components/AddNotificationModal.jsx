@@ -25,6 +25,9 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [loadingClasses, setLoadingClasses] = useState(false);
     const [loadingUsers, setLoadingUsers] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [imageError, setImageError] = useState('');
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     const notificationTypes = [
         { value: 'general', label: 'General' },
@@ -96,9 +99,15 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.size > MAX_FILE_SIZE) {
+                setImageError('Image size exceeds 10MB limit');
+                return;
+            }
+            setImageError('');
             setFormData(prev => ({
                 ...prev,
-                image: e.target.files[0]
+                image: file
             }));
         }
     };
@@ -293,7 +302,7 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                         {/* Image */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                Image (Optional)
+                                Image (Optional, max 10MB)
                             </label>
                             <input
                                 type="file"
@@ -301,6 +310,9 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                 onChange={handleFileChange}
                                 className="w-full border border-gray-300 bg-white rounded-lg px-4 py-3 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
                             />
+                            {imageError && (
+                                <p className="text-red-500 text-xs mt-2">{imageError}</p>
+                            )}
                             {formData.image && (
                                 <div className="mt-2">
                                     <p className="text-sm text-gray-600">Selected: {formData.image.name}</p>
