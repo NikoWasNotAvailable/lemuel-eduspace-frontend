@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils';
 
 const AddSubjectModal = ({ isOpen, onClose, onSubmit, loading, classId, className }) => {
     const [formData, setFormData] = useState({
@@ -7,6 +8,7 @@ const AddSubjectModal = ({ isOpen, onClose, onSubmit, loading, classId, classNam
     });
 
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -32,10 +34,17 @@ const AddSubjectModal = ({ isOpen, onClose, onSubmit, loading, classId, classNam
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
-            onSubmit(formData);
+            try {
+                setGeneralError('');
+                await onSubmit(formData);
+            } catch (error) {
+                const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+                setErrors(prev => ({ ...prev, ...fieldErrors }));
+                if (genErr) setGeneralError(genErr);
+            }
         }
     };
 
@@ -44,6 +53,7 @@ const AddSubjectModal = ({ isOpen, onClose, onSubmit, loading, classId, classNam
             name: ''
         });
         setErrors({});
+        setGeneralError('');
     };
 
     const handleClose = () => {
@@ -64,6 +74,11 @@ const AddSubjectModal = ({ isOpen, onClose, onSubmit, loading, classId, classNam
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6">
+                    {generalError && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="space-y-4">
                         {/* Class Info */}
                         {className && (

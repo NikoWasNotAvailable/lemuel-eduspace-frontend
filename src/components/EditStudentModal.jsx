@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { regionService, classService, userService } from '../services';
+import { parseBackendErrors } from '../utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -25,6 +26,7 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
     });
 
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
     const [regions, setRegions] = useState([]);
     const [loadingRegions, setLoadingRegions] = useState(false);
     const [classes, setClasses] = useState([]);
@@ -187,8 +189,15 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
-            // Pass the profile picture file along with form data
-            onSubmit(formData, profilePictureFile);
+            try {
+                setGeneralError('');
+                // Pass the profile picture file along with form data
+                await onSubmit(formData, profilePictureFile);
+            } catch (error) {
+                const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+                setErrors(prev => ({ ...prev, ...fieldErrors }));
+                if (genErr) setGeneralError(genErr);
+            }
         }
     };
 
@@ -212,6 +221,7 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
             address: ''
         });
         setErrors({});
+        setGeneralError('');
         setClasses([]);
         setProfilePictureFile(null);
         if (profilePicturePreview && profilePicturePreview.startsWith('blob:')) {
@@ -238,6 +248,11 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8">
+                    {generalError && (
+                        <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">

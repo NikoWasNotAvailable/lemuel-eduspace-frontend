@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { regionService } from '../services';
+import { parseBackendErrors } from '../utils';
 
 const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, selectedGrade, selectedCategory }) => {
     const VALID_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
@@ -17,6 +18,7 @@ const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, s
     });
 
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
     const [regions, setRegions] = useState([]);
     const [loadingRegions, setLoadingRegions] = useState(false);
 
@@ -89,14 +91,21 @@ const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, s
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
             const submitData = {
                 name: getClassName(),
                 region_id: formData.region_id
             };
-            onSubmit(submitData);
+            try {
+                setGeneralError('');
+                await onSubmit(submitData);
+            } catch (error) {
+                const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+                setErrors(prev => ({ ...prev, ...fieldErrors }));
+                if (genErr) setGeneralError(genErr);
+            }
         }
     };
 
@@ -107,6 +116,7 @@ const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, s
             region_id: selectedRegionId || ''
         });
         setErrors({});
+        setGeneralError('');
     };
 
     const handleClose = () => {
@@ -127,6 +137,11 @@ const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, s
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6">
+                    {generalError && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="space-y-4">
                         {/* Grade Selection */}
                         <div>

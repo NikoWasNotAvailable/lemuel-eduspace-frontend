@@ -121,7 +121,7 @@ const SessionDetail = () => {
             setAttachments(attachmentsData.attachments || []);
         } catch (err) {
             console.error('Failed to upload attachment:', err);
-            alert('Failed to upload attachment. Please try again.');
+            throw err; // Re-throw for modal to handle
         } finally {
             setUploadingAttachment(false);
         }

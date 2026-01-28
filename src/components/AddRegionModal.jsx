@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils';
 
 const AddRegionModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
         name: ''
     });
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -31,16 +33,24 @@ const AddRegionModal = ({ isOpen, onClose, onSubmit, loading }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
-            onSubmit(formData);
+            try {
+                setGeneralError('');
+                await onSubmit(formData);
+            } catch (error) {
+                const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+                setErrors(prev => ({ ...prev, ...fieldErrors }));
+                if (genErr) setGeneralError(genErr);
+            }
         }
     };
 
     const resetForm = () => {
         setFormData({ name: '' });
         setErrors({});
+        setGeneralError('');
     };
 
     const handleClose = () => {
@@ -61,6 +71,11 @@ const AddRegionModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6">
+                    {generalError && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">

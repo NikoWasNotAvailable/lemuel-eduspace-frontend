@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { XMarkIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils';
 
 const ATTACHMENT_TYPES = [
     { value: 'material', label: 'Material' },
@@ -17,6 +18,7 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
     });
     const [dragActive, setDragActive] = useState(false);
     const [fileError, setFileError] = useState('');
+    const [generalError, setGeneralError] = useState('');
     const fileInputRef = useRef(null);
 
     const validateFile = (file) => {
@@ -68,11 +70,11 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.file) {
-            alert('Please select a file to upload');
+            setFileError('Please select a file to upload');
             return;
         }
 
@@ -84,12 +86,20 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
             submitData.append('name', formData.name);
         }
 
-        onSubmit(submitData);
+        try {
+            setGeneralError('');
+            await onSubmit(submitData);
+        } catch (error) {
+            const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+            if (fieldErrors.file) setFileError(fieldErrors.file);
+            if (genErr) setGeneralError(genErr);
+        }
     };
 
     const handleClose = () => {
         setFormData({ name: '', type: 'material', file: null });
         setFileError('');
+        setGeneralError('');
         onClose();
     };
 
@@ -125,6 +135,11 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {generalError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">{generalError}</p>
+                            </div>
+                        )}
                         {/* File Drop Zone */}
                         <div
                             className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive

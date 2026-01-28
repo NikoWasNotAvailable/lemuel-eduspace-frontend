@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { sessionService } from '../services';
+import { parseBackendErrors } from '../utils';
 
 const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjectName }) => {
     const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
         subject_id: subjectId
     });
     const [nextSessionLoading, setNextSessionLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
 
     useEffect(() => {
         if (isOpen && subjectId) {
@@ -17,6 +20,8 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
             // Set default date to today
             const today = new Date().toISOString().split('T')[0];
             setFormData(prev => ({ ...prev, date: today, subject_id: subjectId, name: '' }));
+            setErrors({});
+            setGeneralError('');
         }
     }, [isOpen, subjectId]);
 
@@ -32,13 +37,20 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit({
-            ...formData,
-            session_no: parseInt(formData.session_no),
-            subject_id: parseInt(subjectId)
-        });
+        try {
+            setGeneralError('');
+            await onSubmit({
+                ...formData,
+                session_no: parseInt(formData.session_no),
+                subject_id: parseInt(subjectId)
+            });
+        } catch (error) {
+            const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+            setErrors(prev => ({ ...prev, ...fieldErrors }));
+            if (genErr) setGeneralError(genErr);
+        }
     };
 
     if (!isOpen) return null;
@@ -71,6 +83,11 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {generalError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">{generalError}</p>
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="session_no" className="block text-sm font-medium text-gray-700">
                                 Session Number

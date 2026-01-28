@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { notificationService } from '../services';
+import { parseBackendErrors } from '../utils';
 
 const EditNotificationModal = ({ isOpen, onClose, onSubmit, loading, notification }) => {
     const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const EditNotificationModal = ({ isOpen, onClose, onSubmit, loading, notificatio
     });
 
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [imageError, setImageError] = useState('');
 
@@ -49,6 +51,7 @@ const EditNotificationModal = ({ isOpen, onClose, onSubmit, loading, notificatio
                 existingImage: notification.image || null
             });
             setErrors({});
+            setGeneralError('');
         }
     }, [isOpen, notification]);
 
@@ -162,7 +165,14 @@ const EditNotificationModal = ({ isOpen, onClose, onSubmit, loading, notificatio
                 updateData.date = null;
             }
 
-            onSubmit(notification.id, updateData);
+            try {
+                setGeneralError('');
+                await onSubmit(notification.id, updateData);
+            } catch (error) {
+                const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+                setErrors(prev => ({ ...prev, ...fieldErrors }));
+                if (genErr) setGeneralError(genErr);
+            }
         }
     };
 
@@ -178,6 +188,7 @@ const EditNotificationModal = ({ isOpen, onClose, onSubmit, loading, notificatio
             existingImage: null
         });
         setErrors({});
+        setGeneralError('');
         onClose();
     };
 
@@ -194,6 +205,11 @@ const EditNotificationModal = ({ isOpen, onClose, onSubmit, loading, notificatio
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8">
+                    {generalError && (
+                        <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="space-y-6">
                         {/* Title */}
                         <div>

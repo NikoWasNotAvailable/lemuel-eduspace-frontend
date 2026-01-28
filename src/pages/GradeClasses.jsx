@@ -93,7 +93,7 @@ const GradeClasses = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to add class:', error);
-            setError(error.response?.data?.detail || 'Failed to add class. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setAddingClass(false);
         }
@@ -120,7 +120,7 @@ const GradeClasses = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to update class:', error);
-            setError(error.response?.data?.detail || 'Failed to update class. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setUpdatingClass(false);
         }

@@ -128,7 +128,7 @@ const ClassSubjects = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to add subject:', error);
-            setError(error.response?.data?.detail || 'Failed to add subject. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setAddingSubject(false);
         }
@@ -201,7 +201,7 @@ const ClassSubjects = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to update subject:', error);
-            setError(error.response?.data?.detail || 'Failed to update subject. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setUpdatingSubject(false);
         }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils';
 
 const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) => {
     const [formData, setFormData] = useState({
@@ -8,6 +9,8 @@ const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) =
         date: '',
         subject_id: ''
     });
+    const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
 
     useEffect(() => {
         if (isOpen && sessionData) {
@@ -17,20 +20,31 @@ const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) =
                 date: sessionData.date || '',
                 subject_id: sessionData.subject_id || ''
             });
+            setErrors({});
+            setGeneralError('');
         }
     }, [isOpen, sessionData]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit({
-            ...formData,
-            session_no: parseInt(formData.session_no),
-            subject_id: parseInt(formData.subject_id)
-        });
+        try {
+            setGeneralError('');
+            await onSubmit({
+                ...formData,
+                session_no: parseInt(formData.session_no),
+                subject_id: parseInt(formData.subject_id)
+            });
+        } catch (error) {
+            const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+            setErrors(prev => ({ ...prev, ...fieldErrors }));
+            if (genErr) setGeneralError(genErr);
+        }
     };
 
     const handleClose = () => {
         setFormData({ session_no: '', name: '', date: '', subject_id: '' });
+        setErrors({});
+        setGeneralError('');
         onClose();
     };
 
@@ -58,6 +72,11 @@ const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) =
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {generalError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">{generalError}</p>
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="session_no" className="block text-sm font-medium text-gray-700">
                                 Session Number
@@ -68,7 +87,7 @@ const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) =
                                 id="session_no"
                                 required
                                 min="1"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3"
+                                className={`mt-1 block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3 ${errors.session_no ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                 value={formData.session_no}
                                 onChange={(e) => setFormData({ ...formData, session_no: e.target.value })}
                             />

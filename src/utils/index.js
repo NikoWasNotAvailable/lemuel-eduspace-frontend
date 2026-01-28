@@ -147,3 +147,58 @@ export const getErrorMessage = (error) => {
     }
     return 'An unexpected error occurred';
 };
+
+/**
+ * Parse backend validation errors from FastAPI response
+ * 
+ * Backend returns errors in this format:
+ * {
+ *   "detail": [
+ *     {
+ *       "type": "value_error",
+ *       "loc": ["body", "field_name"],
+ *       "msg": "Value error, Error message here",
+ *       "input": "submitted_value",
+ *       "ctx": { "error": {} }
+ *     }
+ *   ]
+ * }
+ * 
+ * This function converts it to: { field_name: "Error message here" }
+ */
+export const parseBackendErrors = (error) => {
+    const fieldErrors = {};
+    let generalError = null;
+
+    // Check if it's a 422 validation error with detail array
+    if (error.response?.status === 422 && Array.isArray(error.response?.data?.detail)) {
+        const details = error.response.data.detail;
+
+        details.forEach((err) => {
+            // Get the field name from loc array (usually ["body", "field_name"])
+            const fieldName = err.loc && err.loc.length > 1 ? err.loc[err.loc.length - 1] : null;
+            
+            // Clean up the error message (remove "Value error, " prefix if present)
+            let message = err.msg || 'Invalid value';
+            message = message.replace(/^Value error,\s*/i, '');
+            message = message.replace(/^Assertion failed,\s*/i, '');
+            
+            if (fieldName) {
+                fieldErrors[fieldName] = message;
+            } else {
+                generalError = message;
+            }
+        });
+    } else if (error.response?.data?.detail && typeof error.response.data.detail === 'string') {
+        // Handle string detail message
+        generalError = error.response.data.detail;
+    } else if (error.response?.data?.message) {
+        generalError = error.response.data.message;
+    } else if (error.message) {
+        generalError = error.message;
+    } else {
+        generalError = 'An unexpected error occurred';
+    }
+
+    return { fieldErrors, generalError };
+};

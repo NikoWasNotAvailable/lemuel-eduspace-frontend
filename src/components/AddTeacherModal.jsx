@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { regionService, userService } from '../services';
+import { parseBackendErrors } from '../utils';
 
 const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
     });
 
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
     const [regions, setRegions] = useState([]);
     const [loadingRegions, setLoadingRegions] = useState(false);
     const [profilePictureFile, setProfilePictureFile] = useState(null);
@@ -120,6 +122,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
         }
 
         try {
+            setGeneralError('');
             await onSubmit(formData, profilePictureFile);
             // Reset form on successful submission
             setFormData({
@@ -135,10 +138,13 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 status: 'active'
             });
             setErrors({});
+            setGeneralError('');
             removeProfilePicture();
             onClose();
         } catch (error) {
-            console.error('Error submitting form:', error);
+            const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+            setErrors(prev => ({ ...prev, ...fieldErrors }));
+            if (genErr) setGeneralError(genErr);
         }
     };
 
@@ -157,6 +163,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
             status: 'active'
         });
         setErrors({});
+        setGeneralError('');
         removeProfilePicture();
         onClose();
     };
@@ -174,6 +181,11 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6">
+                    {generalError && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Name */}
                         <div>
@@ -357,7 +369,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
                             >
                                 <option value="active" className="text-gray-900">Active</option>
                                 <option value="inactive" className="text-gray-900">Inactive</option>
-                                <option value="suspended" className="text-gray-900">Suspended</option>
+                                {/* <option value="suspended" className="text-gray-900">Suspended</option> */}
                             </select>
                         </div>
 
@@ -394,7 +406,7 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
                                         type="file"
                                         ref={fileInputRef}
                                         onChange={handleProfilePictureChange}
-                                        accept="image/*"
+                                        accept="image/*,image/avif"
                                         className="hidden"
                                         id="teacher-profile-picture-input"
                                     />

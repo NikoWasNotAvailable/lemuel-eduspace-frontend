@@ -74,7 +74,7 @@ const RegionsList = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to add region:', error);
-            setError(error.response?.data?.detail || 'Failed to add region. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setAddingRegion(false);
         }
@@ -96,7 +96,7 @@ const RegionsList = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to update region:', error);
-            setError(error.response?.data?.detail || 'Failed to update region. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setUpdatingRegion(false);
         }

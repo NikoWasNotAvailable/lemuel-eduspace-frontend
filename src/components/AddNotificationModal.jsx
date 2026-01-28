@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { regionService, classService, userService, notificationService } from '../services';
+import { parseBackendErrors } from '../utils';
 
 const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
     });
 
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
     const [regions, setRegions] = useState([]);
     const [classes, setClasses] = useState([]);
     const [users, setUsers] = useState([]);
@@ -228,7 +230,14 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 submitData.notificationData.date = new Date(formData.date).toISOString();
             }
 
-            onSubmit(submitData);
+            try {
+                setGeneralError('');
+                await onSubmit(submitData);
+            } catch (error) {
+                const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+                setErrors(prev => ({ ...prev, ...fieldErrors }));
+                if (genErr) setGeneralError(genErr);
+            }
         }
     };
 
@@ -246,6 +255,7 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
             specificUserIds: []
         });
         setErrors({});
+        setGeneralError('');
     };
 
     const handleClose = () => {
@@ -266,6 +276,11 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8">
+                    {generalError && (
+                        <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{generalError}</p>
+                        </div>
+                    )}
                     <div className="space-y-6">
                         {/* Title */}
                         <div>

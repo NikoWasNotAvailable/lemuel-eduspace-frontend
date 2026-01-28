@@ -123,7 +123,7 @@ const Teachers = () => {
             setError(null);
         } catch (err) {
             console.error('Error adding teacher:', err);
-            setError('Failed to add teacher. Please try again.');
+            throw err; // Re-throw for modal to handle
         } finally {
             setAddingTeacher(false);
         }
@@ -150,7 +150,7 @@ const Teachers = () => {
             setError(null);
         } catch (err) {
             console.error('Error updating teacher:', err);
-            setError('Failed to update teacher. Please try again.');
+            throw err; // Re-throw for modal to handle
         } finally {
             setEditingTeacher(false);
         }

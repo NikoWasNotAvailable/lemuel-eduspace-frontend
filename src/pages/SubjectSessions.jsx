@@ -83,7 +83,7 @@ const SubjectSessions = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to add session:', error);
-            setError(error.response?.data?.detail || 'Failed to add session. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setAddingSession(false);
         }
@@ -114,7 +114,7 @@ const SubjectSessions = () => {
             setError(null);
         } catch (error) {
             console.error('Failed to update session:', error);
-            setError(error.response?.data?.detail || 'Failed to update session. Please try again.');
+            throw error; // Re-throw for modal to handle
         } finally {
             setUpdatingSession(false);
         }

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils';
 
 const EditSubjectModal = ({ isOpen, onClose, onSubmit, loading, subjectData }) => {
     const [formData, setFormData] = useState({
         name: '',
         class_id: ''
     });
+    const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
 
     useEffect(() => {
         if (isOpen && subjectData) {
@@ -13,19 +16,30 @@ const EditSubjectModal = ({ isOpen, onClose, onSubmit, loading, subjectData }) =
                 name: subjectData.name || '',
                 class_id: subjectData.class_id || ''
             });
+            setErrors({});
+            setGeneralError('');
         }
     }, [isOpen, subjectData]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit({
-            ...formData,
-            class_id: parseInt(formData.class_id)
-        });
+        try {
+            setGeneralError('');
+            await onSubmit({
+                ...formData,
+                class_id: parseInt(formData.class_id)
+            });
+        } catch (error) {
+            const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+            setErrors(prev => ({ ...prev, ...fieldErrors }));
+            if (genErr) setGeneralError(genErr);
+        }
     };
 
     const handleClose = () => {
         setFormData({ name: '', class_id: '' });
+        setErrors({});
+        setGeneralError('');
         onClose();
     };
 
@@ -53,6 +67,11 @@ const EditSubjectModal = ({ isOpen, onClose, onSubmit, loading, subjectData }) =
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {generalError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">{generalError}</p>
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                                 Subject Name
@@ -62,11 +81,15 @@ const EditSubjectModal = ({ isOpen, onClose, onSubmit, loading, subjectData }) =
                                 name="name"
                                 id="name"
                                 required
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3"
+                                className={`mt-1 block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3 ${errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) => {
+                                    setFormData({ ...formData, name: e.target.value });
+                                    if (errors.name) setErrors({ ...errors, name: '' });
+                                }}
                                 placeholder="e.g. Mathematics, Science"
                             />
+                            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                         </div>
 
                         <div className="mt-6 flex justify-end space-x-3">

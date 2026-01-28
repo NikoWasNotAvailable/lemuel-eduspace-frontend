@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils';
 
 const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
     const VALID_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
@@ -9,6 +10,7 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
         region_id: ''
     });
     const [errors, setErrors] = useState({});
+    const [generalError, setGeneralError] = useState('');
 
     useEffect(() => {
         if (isOpen && classData) {
@@ -17,6 +19,7 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
                 region_id: classData.region_id || classData.region?.id || ''
             });
             setErrors({});
+            setGeneralError('');
         }
     }, [isOpen, classData]);
 
@@ -36,7 +39,7 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validate class name
@@ -47,15 +50,23 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
             return;
         }
 
-        onSubmit({
-            ...formData,
-            region_id: parseInt(formData.region_id)
-        });
+        try {
+            setGeneralError('');
+            await onSubmit({
+                ...formData,
+                region_id: parseInt(formData.region_id)
+            });
+        } catch (error) {
+            const { fieldErrors, generalError: genErr } = parseBackendErrors(error);
+            setErrors(prev => ({ ...prev, ...fieldErrors }));
+            if (genErr) setGeneralError(genErr);
+        }
     };
 
     const handleClose = () => {
         setFormData({ name: '', region_id: '' });
         setErrors({});
+        setGeneralError('');
         onClose();
     };
 
@@ -83,6 +94,11 @@ const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {generalError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">{generalError}</p>
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                                 Class Name <span className="text-red-500">*</span>

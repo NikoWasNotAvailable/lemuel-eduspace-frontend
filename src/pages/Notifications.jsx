@@ -196,7 +196,7 @@ const Notifications = () => {
             setError(null);
         } catch (err) {
             console.error('Error adding notification:', err);
-            setError(err.response?.data?.detail || 'Failed to add notification');
+            throw err; // Re-throw for modal to handle
         } finally {
             setAddingNotification(false);
         }
@@ -232,7 +232,7 @@ const Notifications = () => {
             setError(null);
         } catch (err) {
             console.error('Error updating notification:', err);
-            setError(err.response?.data?.detail || 'Failed to update notification');
+            throw err; // Re-throw for modal to handle
         } finally {
             setUpdatingNotification(false);
         }
