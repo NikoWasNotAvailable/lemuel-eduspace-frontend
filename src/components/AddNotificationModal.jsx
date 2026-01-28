@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { regionService, classService, userService, notificationService } from '../services';
+import { parseBackendErrors } from '../utils/errorHandler';
 
 const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -228,7 +229,11 @@ const AddNotificationModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 submitData.notificationData.date = new Date(formData.date).toISOString();
             }
 
-            onSubmit(submitData);
+            setErrors({});
+            const result = await onSubmit(submitData);
+            if (result && result.errors) {
+                setErrors(result.errors);
+            }
         }
     };
 

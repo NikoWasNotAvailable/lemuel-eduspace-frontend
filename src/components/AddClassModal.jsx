@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { regionService } from '../services';
+import { regionService } from '../services';\nimport { parseBackendErrors } from '../utils/errorHandler';
 
 const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, selectedGrade, selectedCategory }) => {
     const VALID_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];
@@ -89,14 +89,18 @@ const AddClassModal = ({ isOpen, onClose, onSubmit, loading, selectedRegionId, s
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
             const submitData = {
                 name: getClassName(),
                 region_id: formData.region_id
             };
-            onSubmit(submitData);
+            setErrors({});
+            const result = await onSubmit(submitData);
+            if (result && result.errors) {
+                setErrors(result.errors);
+            }
         }
     };
 

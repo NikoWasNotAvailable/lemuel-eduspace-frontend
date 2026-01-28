@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils/errorHandler';
 import { regionService, userService } from '../services';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
+const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading, setBackendErrors }) => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -143,13 +144,14 @@ const EditTeacherModal = ({ isOpen, onClose, onSubmit, teacher, loading }) => {
             return;
         }
 
-        try {
-            await onSubmit(formData, profilePictureFile);
-            setErrors({});
-            removeProfilePicture();
-            onClose();
-        } catch (error) {
-            console.error('Error submitting form:', error);
+        // Clear previous errors
+        setErrors({});
+        
+        const result = await onSubmit(formData, profilePictureFile);
+        
+        // If there are backend errors, set them
+        if (result && result.errors) {
+            setErrors(result.errors);
         }
     };
 

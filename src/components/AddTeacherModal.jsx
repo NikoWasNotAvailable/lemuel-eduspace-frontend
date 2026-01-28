@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { regionService, userService } from '../services';
+import { parseBackendErrors } from '../utils/errorHandler';
 
-const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
+const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading, setBackendErrors }) => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -119,26 +120,14 @@ const AddTeacherModal = ({ isOpen, onClose, onSubmit, loading }) => {
             return;
         }
 
-        try {
-            await onSubmit(formData, profilePictureFile);
-            // Reset form on successful submission
-            setFormData({
-                name: '',
-                email: '',
-                password: '',
-                gender: '',
-                region_id: '',
-                dob: '',
-                birth_place: '',
-                address: '',
-                religion: '',
-                status: 'active'
-            });
-            setErrors({});
-            removeProfilePicture();
-            onClose();
-        } catch (error) {
-            console.error('Error submitting form:', error);
+        // Clear previous errors
+        setErrors({});
+        
+        const result = await onSubmit(formData, profilePictureFile);
+        
+        // If there are backend errors, set them
+        if (result && result.errors) {
+            setErrors(result.errors);
         }
     };
 

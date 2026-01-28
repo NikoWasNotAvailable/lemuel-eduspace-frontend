@@ -7,6 +7,7 @@ import SubmitAssignmentModal from '../components/SubmitAssignmentModal';
 import GradeAssignmentModal from '../components/GradeAssignmentModal';
 import { useAuth } from '../context/AuthContext';
 import { useAcademicYear } from '../context/AcademicYearContext';
+import { parseBackendErrors } from '../utils/errorHandler';
 import {
     ArrowLeftIcon,
     DocumentIcon,
@@ -119,9 +120,11 @@ const SessionDetail = () => {
             // Reload attachments
             const attachmentsData = await sessionAttachmentService.getSessionAttachments(sessionId);
             setAttachments(attachmentsData.attachments || []);
+            return { success: true };
         } catch (err) {
             console.error('Failed to upload attachment:', err);
             alert('Failed to upload attachment. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setUploadingAttachment(false);
         }

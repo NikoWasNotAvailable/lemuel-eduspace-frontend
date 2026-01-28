@@ -5,7 +5,7 @@ import AddStudentModal from '../components/AddStudentModal';
 import EditStudentModal from '../components/EditStudentModal';
 import PromotionModal from '../components/PromotionModal';
 import PromotionHistoryModal from '../components/PromotionHistoryModal';
-import { userService, studentService } from '../services';
+import { userService, studentService } from '../services';\nimport { parseBackendErrors } from '../utils/errorHandler';
 import {
     ArrowLeftIcon,
     MagnifyingGlassIcon,
@@ -151,9 +151,12 @@ const Students = () => {
             await fetchStudents(); // Refresh the list
             setIsAddModalOpen(false);
             setError(null);
+            return { success: true };
         } catch (err) {
             console.error('Error adding student:', err);
             setError('Failed to add student. Please try again.');
+            // Return backend errors to modal
+            return { errors: parseBackendErrors(err) };
         } finally {
             setAddingStudent(false);
         }
@@ -178,9 +181,12 @@ const Students = () => {
             setIsEditModalOpen(false);
             setSelectedStudent(null);
             setError(null);
+            return { success: true };
         } catch (err) {
             console.error('Error updating student:', err);
             setError('Failed to update student. Please try again.');
+            // Return backend errors to modal
+            return { errors: parseBackendErrors(err) };
         } finally {
             setEditingStudent(false);
         }

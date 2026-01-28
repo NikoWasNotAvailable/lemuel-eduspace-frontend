@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { sessionService } from '../services';
+import { parseBackendErrors } from '../utils/errorHandler';
 
 const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjectName }) => {
     const [formData, setFormData] = useState({
@@ -32,13 +33,14 @@ const AddSessionModal = ({ isOpen, onClose, onSubmit, loading, subjectId, subjec
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit({
+        const result = await onSubmit({
             ...formData,
             session_no: parseInt(formData.session_no),
             subject_id: parseInt(subjectId)
         });
+        // Note: AddSessionModal doesn't have errors state, might need to add
     };
 
     if (!isOpen) return null;

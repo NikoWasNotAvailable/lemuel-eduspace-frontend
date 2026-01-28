@@ -4,6 +4,7 @@ import Layout from '../components/Layout/Layout';
 import AddTeacherModal from '../components/AddTeacherModal';
 import EditTeacherModal from '../components/EditTeacherModal';
 import { teacherService, userService } from '../services';
+import { parseBackendErrors } from '../utils/errorHandler';
 import {
     ArrowLeftIcon,
     MagnifyingGlassIcon,
@@ -121,9 +122,11 @@ const Teachers = () => {
             await fetchTeachers(); // Refresh the list
             setIsAddModalOpen(false);
             setError(null);
+            return { success: true };
         } catch (err) {
             console.error('Error adding teacher:', err);
             setError('Failed to add teacher. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setAddingTeacher(false);
         }
@@ -148,9 +151,11 @@ const Teachers = () => {
             setIsEditModalOpen(false);
             setSelectedTeacher(null);
             setError(null);
+            return { success: true };
         } catch (err) {
             console.error('Error updating teacher:', err);
             setError('Failed to update teacher. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setEditingTeacher(false);
         }

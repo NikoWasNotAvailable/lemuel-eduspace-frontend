@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils/errorHandler';
 
 const EditClassModal = ({ isOpen, onClose, onSubmit, loading, classData }) => {
     const VALID_GRADES = ['TKA', 'TKB', 'SD1', 'SD2', 'SD3', 'SD4', 'SD5', 'SD6', 'SMP1', 'SMP2', 'SMP3'];

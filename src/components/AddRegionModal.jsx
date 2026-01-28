@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils/errorHandler';
 
 const AddRegionModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -31,10 +32,14 @@ const AddRegionModal = ({ isOpen, onClose, onSubmit, loading }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
-            onSubmit(formData);
+            setErrors({});
+            const result = await onSubmit(formData);
+            if (result && result.errors) {
+                setErrors(result.errors);
+            }
         }
     };
 

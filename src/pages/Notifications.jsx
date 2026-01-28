@@ -5,6 +5,7 @@ import AddNotificationModal from '../components/AddNotificationModal';
 import EditNotificationModal from '../components/EditNotificationModal';
 import { notificationService } from '../services';
 import { useAuth } from '../context/AuthContext';
+import { parseBackendErrors } from '../utils/errorHandler';
 import {
     BellIcon,
     PlusIcon,
@@ -194,9 +195,11 @@ const Notifications = () => {
             await fetchNotifications();
             setIsAddModalOpen(false);
             setError(null);
+            return { success: true };
         } catch (err) {
             console.error('Error adding notification:', err);
             setError(err.response?.data?.detail || 'Failed to add notification');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setAddingNotification(false);
         }
@@ -230,9 +233,11 @@ const Notifications = () => {
             setIsEditModalOpen(false);
             setEditingNotification(null);
             setError(null);
+            return { success: true };
         } catch (err) {
             console.error('Error updating notification:', err);
             setError(err.response?.data?.detail || 'Failed to update notification');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setUpdatingNotification(false);
         }

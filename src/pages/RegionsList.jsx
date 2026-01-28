@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { regionService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import { useAcademicYear } from '../context/AcademicYearContext';
+import { parseBackendErrors } from '../utils/errorHandler';
 import Layout from '../components/Layout/Layout';
 import AddRegionModal from '../components/AddRegionModal';
 import EditRegionModal from '../components/EditRegionModal';
@@ -72,9 +73,11 @@ const RegionsList = () => {
             await loadRegions();
             setIsAddModalOpen(false);
             setError(null);
-        } catch (error) {
-            console.error('Failed to add region:', error);
-            setError(error.response?.data?.detail || 'Failed to add region. Please try again.');
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to add region:', err);
+            setError(err.response?.data?.detail || 'Failed to add region. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setAddingRegion(false);
         }
@@ -94,9 +97,11 @@ const RegionsList = () => {
             setIsEditModalOpen(false);
             setEditingRegion(null);
             setError(null);
-        } catch (error) {
-            console.error('Failed to update region:', error);
-            setError(error.response?.data?.detail || 'Failed to update region. Please try again.');
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to update region:', err);
+            setError(err.response?.data?.detail || 'Failed to update region. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setUpdatingRegion(false);
         }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils/errorHandler';
 
 const EditSubjectModal = ({ isOpen, onClose, onSubmit, loading, subjectData }) => {
     const [formData, setFormData] = useState({

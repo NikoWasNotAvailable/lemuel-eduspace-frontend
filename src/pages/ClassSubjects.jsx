@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { subjectService, classService, teacherSubjectService, studentService } from '../services';
 import { useAuth } from '../context/AuthContext';
+import { parseBackendErrors } from '../utils/errorHandler';
 import Layout from '../components/Layout/Layout';
 import AddSubjectModal from '../components/AddSubjectModal';
 import AssignTeacherModal from '../components/AssignTeacherModal';
@@ -126,9 +127,11 @@ const ClassSubjects = () => {
 
             setIsAddModalOpen(false);
             setError(null);
-        } catch (error) {
-            console.error('Failed to add subject:', error);
-            setError(error.response?.data?.detail || 'Failed to add subject. Please try again.');
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to add subject:', err);
+            setError(err.response?.data?.detail || 'Failed to add subject. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setAddingSubject(false);
         }
@@ -199,9 +202,11 @@ const ClassSubjects = () => {
             setIsEditModalOpen(false);
             setEditingSubject(null);
             setError(null);
-        } catch (error) {
-            console.error('Failed to update subject:', error);
-            setError(error.response?.data?.detail || 'Failed to update subject. Please try again.');
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to update subject:', err);
+            setError(err.response?.data?.detail || 'Failed to update subject. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setUpdatingSubject(false);
         }

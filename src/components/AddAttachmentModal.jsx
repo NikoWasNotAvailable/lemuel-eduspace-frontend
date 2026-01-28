@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { XMarkIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';\nimport { parseBackendErrors } from '../utils/errorHandler';
 
 const ATTACHMENT_TYPES = [
     { value: 'material', label: 'Material' },
@@ -68,11 +68,11 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.file) {
-            alert('Please select a file to upload');
+            setFileError('Please select a file to upload');
             return;
         }
 
@@ -84,7 +84,14 @@ const AddAttachmentModal = ({ isOpen, onClose, onSubmit, loading, sessionId }) =
             submitData.append('name', formData.name);
         }
 
-        onSubmit(submitData);
+        setFileError('');
+        const result = await onSubmit(submitData);
+        // Backend errors would be in result.errors if any
+        if (result && result.errors) {
+            if (result.errors.file) {
+                setFileError(result.errors.file);
+            }
+        }
     };
 
     const handleClose = () => {

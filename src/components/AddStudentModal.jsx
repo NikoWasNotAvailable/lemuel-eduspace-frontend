@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { regionService, classService, userService } from '../services';
+import { parseBackendErrors } from '../utils/errorHandler';
 
-const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
+const AddStudentModal = ({ isOpen, onClose, onSubmit, loading, setBackendErrors }) => {
     const [formData, setFormData] = useState({
         nis: '',
         name: '',
@@ -154,8 +155,14 @@ const AddStudentModal = ({ isOpen, onClose, onSubmit, loading }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
+            // Clear previous errors
+            setErrors({});
             // Pass the profile picture file along with form data
-            onSubmit(formData, profilePictureFile);
+            const result = await onSubmit(formData, profilePictureFile);
+            // If there are backend errors, set them
+            if (result && result.errors) {
+                setErrors(result.errors);
+            }
         }
     };
 

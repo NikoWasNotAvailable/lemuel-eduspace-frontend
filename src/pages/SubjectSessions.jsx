@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { subjectService, sessionService, classService, teacherSubjectService } from '../services';
 import { useAuth } from '../context/AuthContext';
+import { parseBackendErrors } from '../utils/errorHandler';
 import Layout from '../components/Layout/Layout';
 import AddSessionModal from '../components/AddSessionModal';
 import EditSessionModal from '../components/EditSessionModal';
@@ -81,9 +82,11 @@ const SubjectSessions = () => {
 
             setIsAddModalOpen(false);
             setError(null);
-        } catch (error) {
-            console.error('Failed to add session:', error);
-            setError(error.response?.data?.detail || 'Failed to add session. Please try again.');
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to add session:', err);
+            setError(err.response?.data?.detail || 'Failed to add session. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setAddingSession(false);
         }
@@ -112,9 +115,11 @@ const SubjectSessions = () => {
             setIsEditModalOpen(false);
             setEditingSession(null);
             setError(null);
-        } catch (error) {
-            console.error('Failed to update session:', error);
-            setError(error.response?.data?.detail || 'Failed to update session. Please try again.');
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to update session:', err);
+            setError(err.response?.data?.detail || 'Failed to update session. Please try again.');
+            return { errors: parseBackendErrors(err) };
         } finally {
             setUpdatingSession(false);
         }

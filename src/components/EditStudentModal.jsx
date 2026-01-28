@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils/errorHandler';
 import { regionService, classService, userService } from '../services';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
+const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student, setBackendErrors }) => {
     const [formData, setFormData] = useState({
         nis: '',
         name: '',
@@ -187,8 +188,14 @@ const EditStudentModal = ({ isOpen, onClose, onSubmit, loading, student }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
+            // Clear previous errors
+            setErrors({});
             // Pass the profile picture file along with form data
-            onSubmit(formData, profilePictureFile);
+            const result = await onSubmit(formData, profilePictureFile);
+            // If there are backend errors, set them
+            if (result && result.errors) {
+                setErrors(result.errors);
+            }
         }
     };
 

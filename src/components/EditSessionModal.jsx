@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { parseBackendErrors } from '../utils/errorHandler';
 
 const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) => {
     const [formData, setFormData] = useState({
@@ -20,13 +21,14 @@ const EditSessionModal = ({ isOpen, onClose, onSubmit, loading, sessionData }) =
         }
     }, [isOpen, sessionData]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit({
+        const result = await onSubmit({
             ...formData,
             session_no: parseInt(formData.session_no),
             subject_id: parseInt(formData.subject_id)
         });
+        // Note: EditSessionModal doesn't have errors state, might need to add
     };
 
     const handleClose = () => {
